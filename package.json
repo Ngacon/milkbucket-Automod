@@ -1,0 +1,20 @@
+{
+  "name": "milkbucket",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "src/app/bootstrap.js",
+  "scripts": {
+    "start": "node src/app/bootstrap.js",
+    "dev": "node --watch src/app/bootstrap.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.0.0",
+    "dotenv": "^16.0.0",
+    "ioredis": "^5.0.0",
+    "pg": "^8.0.0"
+  }
+}
