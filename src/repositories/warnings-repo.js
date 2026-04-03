@@ -31,6 +31,21 @@ class WarningsRepository {
     return result.rows;
   }
 
+  async countWarningsWithinWindow({ guildId, userId, timeWindowSeconds }) {
+    const result = await this.pool.query(
+      `
+        SELECT COUNT(*)::INT AS total
+        FROM warnings
+        WHERE guild_id = $1
+          AND user_id = $2
+          AND created_at > NOW() - ($3 * INTERVAL '1 second')
+      `,
+      [guildId, userId, timeWindowSeconds]
+    );
+
+    return result.rows[0]?.total || 0;
+  }
+
   async clearWarnings({ guildId, userId }) {
     await this.pool.query(
       `

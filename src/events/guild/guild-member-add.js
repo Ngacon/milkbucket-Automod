@@ -1,6 +1,13 @@
-async function registerGuildMemberAddEvent({ client, autoroleRepo, logger }) {
+async function registerGuildMemberAddEvent({ client, moderationService, autoroleRepo, logger }) {
   client.on('guildMemberAdd', async (member) => {
     try {
+      if (moderationService) {
+        const violation = await moderationService.handleGuildMemberAdd(member);
+        if (violation) {
+          return;
+        }
+      }
+
       const roleId = await autoroleRepo.getRole(member.guild.id);
       if (!roleId) {
         return;

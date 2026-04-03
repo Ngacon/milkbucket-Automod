@@ -1,8 +1,8 @@
-function registerMessageCreateEvent({ client, router, automodService, logger }) {
+function registerMessageCreateEvent({ client, router, moderationService, logger }) {
   client.on('messageCreate', async (message) => {
     try {
-      if (automodService) {
-        const violation = await automodService.handleMessage(message);
+      if (moderationService) {
+        const violation = await moderationService.handleMessage(message);
         if (violation) {
           return;
         }

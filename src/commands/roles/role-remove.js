@@ -1,4 +1,4 @@
-const { resolveMember, extractId } = require('../../app/command-utils');
+const { resolveMember, resolveRole } = require('../../app/command-utils');
 
 module.exports = {
   meta: {
@@ -9,13 +9,13 @@ module.exports = {
     botPermissions: ['ManageRoles'],
     cooldown: 2,
     args: { min: 2, max: 2, usage: 'role-remove @user @role' },
+    examples: ['role remove @user @role', 'role remove @user Member'],
     descriptionKey: 'roles.descriptions.roleRemove',
     guildOnly: true
   },
   async execute({ message, args, t, respond }) {
     const member = await resolveMember(message, args[0]);
-    const roleId = extractId(args[1]);
-    const role = roleId ? message.guild.roles.cache.get(roleId) : null;
+    const role = resolveRole(message, args[1]);
 
     if (!member || !role) {
       await respond({

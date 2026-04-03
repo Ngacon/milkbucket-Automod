@@ -1,5 +1,6 @@
 const { resolveMember, getModerationBlock } = require('../../app/command-utils');
-const { BOT_EMOJIS } = require('../../config/constants');
+const { BOT_EMOJIS, EMBED_COLORS } = require('../../config/constants');
+const { sendModerationLog } = require('../../services/moderation/modlog');
 
 module.exports = {
   meta: {
@@ -13,7 +14,7 @@ module.exports = {
     descriptionKey: 'admin.descriptions.kick',
     guildOnly: true
   },
-  async execute({ message, args, t, respond }) {
+  async execute({ message, args, t, respond, repos }) {
     const targetArg = args.shift();
     const reason = args.join(' ').trim() || null;
     const member = await resolveMember(message, targetArg);
@@ -40,6 +41,33 @@ module.exports = {
     }
 
     await member.kick(reason || undefined);
+    await sendModerationLog({
+      guild: message.guild,
+      repos,
+      color: EMBED_COLORS.ERROR,
+      title: t('moderation.responses.logTitle', {
+        action: t('moderation.actions.kick')
+      }),
+      description: reason || t('moderation.responses.noReason'),
+      thumbnail: member.user.displayAvatarURL({ size: 256 }),
+      fields: [
+        {
+          name: t('moderation.labels.user'),
+          value: `${member.user.tag} (${member.id})`,
+          inline: false
+        },
+        {
+          name: t('moderation.labels.moderator'),
+          value: `${message.author.tag} (${message.author.id})`,
+          inline: false
+        },
+        {
+          name: t('moderation.labels.reason'),
+          value: reason || t('moderation.responses.noReason'),
+          inline: false
+        }
+      ]
+    });
     await respond({
       author: {
         name: member.user.tag,

@@ -1,13 +1,16 @@
 module.exports = {
   automod: {
     descriptions: {
-      automod: 'Bật hoặc tắt toàn bộ AutoMod.',
+      automod: 'Bật, tắt hoặc xem nhanh AutoMod.',
+      automodStatus: 'Xem trạng thái AutoMod và escalation hiện tại.',
+      automodList: 'Xem toàn bộ rule đang bật hoặc tắt.',
+      automodSetwarn: 'Đặt mốc cảnh cáo và thang xử phạt.',
       antilink: 'Bật hoặc tắt chống link.',
       antiinvite: 'Bật hoặc tắt chống invite.',
       antispam: 'Bật hoặc tắt chống spam.',
-      antidup: 'Bật hoặc tắt chống trùng lặp.',
+      antidup: 'Bật hoặc tắt chống lặp tin nhắn.',
       anticaps: 'Bật hoặc tắt chống viết hoa quá nhiều.',
-      antimention: 'Giới hạn số lượng tag.',
+      antimention: 'Đặt giới hạn số người được tag.',
       addword: 'Thêm từ cấm.',
       delword: 'Xóa từ cấm.',
       listwords: 'Xem danh sách từ cấm.'
@@ -17,25 +20,73 @@ module.exports = {
       wordAdded: 'Đã thêm từ cấm: {{word}}',
       wordRemoved: 'Đã xóa từ cấm: {{word}}',
       wordsList: 'Danh sách từ cấm: {{words}}',
-      wordsEmpty: 'Danh sách từ cấm đang trống.'
+      wordsEmpty: 'Danh sách từ cấm đang trống.',
+      statusTitle: 'Bảng điều khiển AutoMod',
+      statusDescription: 'Tổng quan hệ thống, hành động tự động và escalation hiện tại.',
+      listTitle: 'Danh sách rule AutoMod',
+      listDescription: 'Trạng thái toàn bộ rule đang áp dụng trong server.',
+      dashboardSummary: 'AutoMod đang {{state}}. Hiện có {{rules}} rule đang bật.',
+      thresholdLine: '{{warns}} warn -> {{action}} {{duration}}',
+      thresholdUpdated: 'Đã cập nhật mốc {{warns}} warn -> {{action}}{{duration}}.',
+      windowUpdated: 'Đã cập nhật cửa sổ cảnh cáo: {{seconds}}s.',
+      noThresholds: 'Chưa có mốc escalation.',
+      modlogMissing: 'Chưa cấu hình modlog.',
+      mentionLimitUpdated: 'Đã cập nhật giới hạn tag: {{max}}'
+    },
+    labels: {
+      systemState: 'Trạng thái',
+      rules: 'Rules',
+      actions: 'Hành động',
+      escalation: 'Escalation',
+      timeWindow: 'Khung thời gian',
+      modlog: 'Modlog',
+      notSet: 'không có'
+    },
+    actions: {
+      deleteMessage: 'Xóa tin nhắn',
+      autowarn: 'Tự động warn',
+      timeout: 'Timeout',
+      mute: 'Mute',
+      kick: 'Kick',
+      ban: 'Ban'
     },
     features: {
       automod: 'AutoMod',
-      antilink: 'AntiLink',
-      antiinvite: 'AntiInvite',
-      antispam: 'AntiSpam',
-      antidup: 'AntiDup',
-      anticaps: 'AntiCaps',
-      antimention: 'AntiMention'
+      antilink: 'Chống link',
+      antiinvite: 'Chống invite',
+      antispam: 'Chống spam',
+      antidup: 'Chống lặp',
+      anticaps: 'Chống viết hoa',
+      antimention: 'Giới hạn tag',
+      spam: 'Spam',
+      duplicate: 'Lặp tin nhắn',
+      link: 'Link',
+      invite: 'Invite',
+      badwords: 'Từ cấm',
+      caps: 'Viết hoa',
+      mention: 'Mass mention',
+      webhook: 'Webhook spam',
+      selfbot: 'Selfbot',
+      botRaid: 'Bot raid'
     },
     violations: {
       antilink: 'Không được gửi link.',
-      antiinvite: 'Không được gửi link mời.',
+      antiinvite: 'Không được gửi link mời server khác.',
       antispam: 'Đừng spam nữa bro.',
-      antidup: 'Không được gửi tin nhắn trùng lặp.',
-      anticaps: 'Không được viết hoa quá nhiều.',
-      antimention: 'Không được tag quá {{max}} người.',
-      badword: 'Không được dùng từ cấm.'
+      antidup: 'Đừng gửi tin nhắn lặp lại.',
+      anticaps: 'Đừng viết hoa quá nhiều.',
+      antimention: 'Đừng tag quá {{max}} người.',
+      badword: 'Không được dùng từ cấm.',
+      spam: 'Spam tin nhắn.',
+      duplicate: 'Gửi tin nhắn trùng lặp.',
+      link: 'Gửi link trái phép.',
+      invite: 'Gửi link mời trái phép.',
+      badwords: 'Chửi thề.',
+      caps: 'Viết hoa quá nhiều.',
+      mention: 'Mass mention.',
+      'webhook-spam': 'Webhook spam.',
+      selfbot: 'Hành vi selfbot.',
+      'bot-add': 'Bot raid detected.'
     }
   }
 };

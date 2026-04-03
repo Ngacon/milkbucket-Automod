@@ -5,7 +5,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { createLogger } = require('./logger');
 const { installGlobalExceptionHandlers } = require('./exception-handler');
 const { createRouter, loadCommandsFromDirectory } = require('./router');
-const { createAutomodService } = require('./automod-service');
+const { createModerationService } = require('../services/moderation/moderation-service');
 const {
   createPostgres,
   initializePostgres,
@@ -60,7 +60,11 @@ async function bootstrap() {
   });
 
   const warningsRepo = new WarningsRepository({ pool });
-  const automodRepo = new AutomodRepository({ pool });
+  const automodRepo = new AutomodRepository({
+    pool,
+    redis,
+    logger: logger.child('automod-repo')
+  });
   const autoroleRepo = new AutoroleRepository({ pool });
   const reactionRoleRepo = new ReactionRoleRepository({ pool });
 
@@ -75,6 +79,7 @@ async function bootstrap() {
   const client = new Client({
     intents: [
       GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.MessageContent
     ]
@@ -98,23 +103,24 @@ async function bootstrap() {
     repos
   });
 
-  const automodService = createAutomodService({
-    automodRepo,
-    guildSettingsRepo,
+  const moderationService = createModerationService({
+    client,
     i18n,
     redis,
+    repos,
     logger: logger.child('automod')
   });
 
   registerMessageCreateEvent({
     client,
     router,
-    automodService,
+    moderationService,
     logger: logger.child('events:messageCreate')
   });
 
   registerGuildMemberAddEvent({
     client,
+    moderationService,
     autoroleRepo,
     logger: logger.child('events:guildMemberAdd')
   });

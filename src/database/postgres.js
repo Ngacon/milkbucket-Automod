@@ -63,11 +63,43 @@ async function initializePostgres(pool, logger) {
   `);
 
   await pool.query(`
+    ALTER TABLE automod_settings
+    ADD COLUMN IF NOT EXISTS badwords BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS webhookspam BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS selfbot BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS botraid BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS delete_message BOOLEAN NOT NULL DEFAULT TRUE,
+    ADD COLUMN IF NOT EXISTS autowarn BOOLEAN NOT NULL DEFAULT TRUE,
+    ADD COLUMN IF NOT EXISTS time_window_seconds INTEGER NOT NULL DEFAULT 600;
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS automod_words (
       guild_id TEXT NOT NULL,
       word TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       PRIMARY KEY (guild_id, word)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS automod_thresholds (
+      guild_id TEXT NOT NULL,
+      warns INTEGER NOT NULL,
+      action VARCHAR(32) NOT NULL,
+      duration INTEGER,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (guild_id, warns)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS modlog_config (
+      guild_id TEXT PRIMARY KEY,
+      channel_id TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
 

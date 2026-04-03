@@ -7,6 +7,7 @@ module.exports = {
     botPermissions: ['ManageMessages'],
     cooldown: 2,
     args: { min: 1, max: 1, usage: 'antimention [max]' },
+    examples: ['antimention 5', 'antimention 0'],
     descriptionKey: 'automod.descriptions.antimention',
     guildOnly: true
   },
@@ -24,9 +25,8 @@ module.exports = {
 
     await repos.automodRepo.setAntiMention(message.guild.id, maxMentions);
     await respond({
-      description: t('automod.responses.toggled', {
-        feature: t('automod.features.antimention'),
-        state: `${maxMentions}`
+      description: t('automod.responses.mentionLimitUpdated', {
+        max: maxMentions
       })
     });
   }

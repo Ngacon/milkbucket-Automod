@@ -1,4 +1,4 @@
-const { extractId } = require('../../app/command-utils');
+const { extractId, resolveRole } = require('../../app/command-utils');
 
 module.exports = {
   meta: {
@@ -9,23 +9,16 @@ module.exports = {
     botPermissions: ['ManageRoles'],
     cooldown: 2,
     args: { min: 3, max: 3, usage: 'reaction-role [message_id] [emoji] @role' },
+    examples: ['reaction role 123456789012345678 👍 @role'],
     descriptionKey: 'roles.descriptions.reactionRole',
     guildOnly: true
   },
   async execute({ message, args, repos, t, respond }) {
     const messageId = extractId(args[0]);
     const emoji = args[1];
-    const roleId = extractId(args[2]);
+    const role = resolveRole(message, args[2]);
 
-    if (!messageId || !emoji || !roleId) {
-      await respond({
-        description: t('common.responses.failure')
-      });
-      return;
-    }
-
-    const role = message.guild.roles.cache.get(roleId);
-    if (!role) {
+    if (!messageId || !emoji || !role) {
       await respond({
         description: t('common.responses.failure')
       });
@@ -39,7 +32,7 @@ module.exports = {
       guildId: message.guild.id,
       channelId: message.channel.id,
       messageId,
-      roleId,
+      roleId: role.id,
       emoji
     });
 

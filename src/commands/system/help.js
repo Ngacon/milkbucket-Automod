@@ -7,16 +7,18 @@ const {
   formatCommandLabel
 } = require('../../app/command-registry');
 
-const CATEGORY_EMOJIS = {
-  admin: '🛡️',
-  automod: '🤖',
-  roles: '🎭',
-  channels: '🧱',
-  info: '📌',
-  utility: '🧰',
-  fun: '✨',
-  system: '⚙️'
-};
+const HOME_VIEW = 'home';
+const CATEGORY_ORDER = [
+  'system',
+  'moderation',
+  'automod',
+  'admin',
+  'roles',
+  'channels',
+  'utility',
+  'info',
+  'fun'
+];
 
 function formatUsage(value) {
   return String(value || '')
@@ -54,82 +56,114 @@ function chunkLines(lines, maxLength = 900) {
   return chunks;
 }
 
-function buildCategoryMenu(categories, activeCategory, t) {
+function sortCategories(groupedCommands) {
+  const categories = Object.keys(groupedCommands);
+
+  return categories.sort((left, right) => {
+    const leftIndex = CATEGORY_ORDER.indexOf(left);
+    const rightIndex = CATEGORY_ORDER.indexOf(right);
+
+    if (leftIndex === -1 && rightIndex === -1) {
+      return left.localeCompare(right);
+    }
+
+    if (leftIndex === -1) {
+      return 1;
+    }
+
+    if (rightIndex === -1) {
+      return -1;
+    }
+
+    return leftIndex - rightIndex;
+  });
+}
+
+function buildCategoryMenu(categories, activeView, t) {
   return new StringSelectMenuBuilder()
     .setCustomId('help:category')
     .setPlaceholder(t('system.labels.selectCategory'))
     .addOptions(
-      categories.map((category) => ({
+      [HOME_VIEW, ...categories].map((category) => ({
         label: t(`system.categories.${category}`),
         value: category,
-        emoji: CATEGORY_EMOJIS[category],
-        default: category === activeCategory
+        default: category === activeView
       }))
     );
 }
 
-function buildOverviewEmbed({
-  buildEmbed,
-  colors,
-  t,
-  prefix,
-  totalCommands,
-  categories,
-  selectedCategory,
-  commands,
-  botUser
-}) {
-  const categoryLabel = t(`system.categories.${selectedCategory}`);
-  const commandLines = commands.map((command) => {
-    const description = t(command.meta.descriptionKey || 'system.responses.noDescription');
-    return `• \`${prefix}${formatCommandLabel(command.meta.name)}\`\n${description}`;
+function buildHomeEmbed({ buildEmbed, colors, t, prefix, totalCommands, categories, groupedCommands, botUser }) {
+  const categoryLines = categories.map((category) => {
+    const count = groupedCommands[category]?.length || 0;
+    return `- ${t(`system.categories.${category}`)}: ${count}`;
   });
-
-  const fields = [
-    {
-      name: t('system.labels.quickStart'),
-      value: [
-        `\`${prefix}help\` - ${t('system.responses.helpOpenOverview')}`,
-        `\`${prefix}help ban\` - ${t('system.responses.helpOpenCommand')}`,
-        `\`${prefix}help role add\` - ${t('system.responses.helpOpenNestedCommand')}`,
-        `\`${prefix}move channel top\` - ${t('system.responses.helpRunExample')}`
-      ].join('\n'),
-      inline: false
-    },
-    {
-      name: t('system.labels.categories'),
-      value: categories
-        .map((category) => `${CATEGORY_EMOJIS[category] || '•'} ${t(`system.categories.${category}`)}`)
-        .join(' | '),
-      inline: false
-    }
-  ];
-
-  const chunks = chunkLines(commandLines);
-  for (let index = 0; index < chunks.length; index += 1) {
-    fields.push({
-      name:
-        index === 0
-          ? `${CATEGORY_EMOJIS[selectedCategory] || '•'} ${categoryLabel}`
-          : `${categoryLabel} ${index + 1}`,
-      value: chunks[index],
-      inline: false
-    });
-  }
 
   return buildEmbed({
     color: colors.PRIMARY,
     title: t('system.responses.helpTitle'),
-    description: t('system.responses.helpSummary', {
+    description: [
+      t('system.responses.helpHomeSummary', {
+        total: totalCommands,
+        categories: categories.length
+      }),
+      t('system.responses.helpSidebarHint')
+    ].join('\n'),
+    author: botUser
+      ? {
+          name: t('system.categories.home'),
+          iconURL: botUser.displayAvatarURL({ size: 128 })
+        }
+      : undefined,
+    thumbnail: botUser?.displayAvatarURL({ size: 256 }),
+    fields: [
+      {
+        name: t('system.labels.quickStart'),
+        value: [
+          `\`${prefix}help\` - ${t('system.responses.helpOpenOverview')}`,
+          `\`${prefix}help ban\` - ${t('system.responses.helpOpenCommand')}`,
+          `\`${prefix}help role add\` - ${t('system.responses.helpOpenNestedCommand')}`,
+          `\`${prefix}automod status\` - ${t('system.responses.helpRunExample')}`
+        ].join('\n'),
+        inline: false
+      },
+      {
+        name: t('system.labels.categories'),
+        value: categoryLines.join('\n'),
+        inline: false
+      }
+    ]
+  });
+}
+
+function buildCategoryEmbed({ buildEmbed, colors, t, prefix, category, commands, totalCommands, botUser }) {
+  const categoryLabel = t(`system.categories.${category}`);
+  const commandLines = commands.map((command) => {
+    const description = t(command.meta.descriptionKey || 'system.responses.noDescription');
+    return `- \`${prefix}${formatCommandLabel(command.meta.name)}\` - ${description}`;
+  });
+
+  const fields = chunkLines(commandLines).map((value, index) => ({
+    name:
+      index === 0
+        ? t('system.responses.helpCategory', {
+            category: categoryLabel
+          })
+        : `${categoryLabel} ${index + 1}`,
+    value,
+    inline: false
+  }));
+
+  return buildEmbed({
+    color: colors.PRIMARY,
+    title: t('system.responses.helpTitle'),
+    description: t('system.responses.helpCategorySummary', {
       total: totalCommands,
       category: categoryLabel,
       count: commands.length
     }),
     author: botUser
       ? {
-          name: t('system.responses.helpCategory', {
-            category: categoryLabel
-          }),
+          name: categoryLabel,
           iconURL: botUser.displayAvatarURL({ size: 128 })
         }
       : undefined,
@@ -138,15 +172,7 @@ function buildOverviewEmbed({
   });
 }
 
-function buildDetailEmbed({
-  buildEmbed,
-  colors,
-  t,
-  prefix,
-  command,
-  relatedCommands,
-  botUser
-}) {
+function buildDetailEmbed({ buildEmbed, colors, t, prefix, command, relatedCommands, botUser }) {
   const { meta } = command;
   const commandLabel = formatCommandLabel(meta.name);
   const usage = meta.args?.usage
@@ -162,13 +188,9 @@ function buildDetailEmbed({
     ? meta.examples.map((example) => `\`${prefix}${formatUsage(example)}\``)
     : [`\`${prefix}${formatUsage(meta.args?.usage || meta.name)}\``];
 
-  if (meta.aliases?.length) {
-    examples.push(`\`${prefix}${formatCommandLabel(meta.aliases[0])}\``);
-  }
-
   return buildEmbed({
     color: colors.PRIMARY,
-    title: `${CATEGORY_EMOJIS[meta.category] || '•'} ${prefix}${commandLabel}`,
+    title: `${prefix}${commandLabel}`,
     description: t(meta.descriptionKey || 'system.responses.noDescription'),
     author: botUser
       ? {
@@ -239,19 +261,43 @@ module.exports = {
   async execute({ args, registry, t, reply, buildEmbed, colors, message, prefix }) {
     const uniqueCommands = getUniqueCommands(registry);
     const groupedCommands = groupCommandsByCategory(uniqueCommands);
-    const categories = Object.keys(groupedCommands).sort();
-    const defaultCategory = categories[0] || 'system';
+    const categories = sortCategories(groupedCommands);
     const botUser = message.client.user || null;
-    let activeCategory = defaultCategory;
 
     const getCategoryCommands = (categoryKey) =>
       (groupedCommands[categoryKey] || []).sort((left, right) =>
         formatCommandLabel(left.meta.name).localeCompare(formatCommandLabel(right.meta.name))
       );
 
-    const buildRows = (categoryKey) => [
-      new ActionRowBuilder().addComponents(buildCategoryMenu(categories, categoryKey, t))
+    const buildRows = (activeView) => [
+      new ActionRowBuilder().addComponents(buildCategoryMenu(categories, activeView, t))
     ];
+
+    const renderOverview = (activeView) => {
+      if (activeView === HOME_VIEW) {
+        return buildHomeEmbed({
+          buildEmbed,
+          colors,
+          t,
+          prefix,
+          totalCommands: uniqueCommands.length,
+          categories,
+          groupedCommands,
+          botUser
+        });
+      }
+
+      return buildCategoryEmbed({
+        buildEmbed,
+        colors,
+        t,
+        prefix,
+        category: activeView,
+        commands: getCategoryCommands(activeView),
+        totalCommands: uniqueCommands.length,
+        botUser
+      });
+    };
 
     const query = args.join(' ').trim();
     const queriedCommand = query
@@ -274,8 +320,7 @@ module.exports = {
       return;
     }
 
-    activeCategory = queriedCommand?.meta.category || defaultCategory;
-
+    const activeView = queriedCommand?.meta.category || HOME_VIEW;
     const sent = await reply({
       embeds: [
         queriedCommand
@@ -285,30 +330,21 @@ module.exports = {
               t,
               prefix,
               command: queriedCommand,
-              relatedCommands: getCategoryCommands(activeCategory)
+              relatedCommands: getCategoryCommands(queriedCommand.meta.category || 'system')
                 .filter((command) => command.meta.name !== queriedCommand.meta.name)
                 .slice(0, 6),
               botUser
             })
-          : buildOverviewEmbed({
-              buildEmbed,
-              colors,
-              t,
-              prefix,
-              totalCommands: uniqueCommands.length,
-              categories,
-              selectedCategory: activeCategory,
-              commands: getCategoryCommands(activeCategory),
-              botUser
-            })
+          : renderOverview(activeView)
       ],
-      components: buildRows(activeCategory)
+      components: buildRows(activeView)
     });
 
     if (!sent) {
       return;
     }
 
+    let currentView = activeView;
     const collector = sent.createMessageComponentCollector({
       time: 5 * 60 * 1000
     });
@@ -326,28 +362,16 @@ module.exports = {
         return;
       }
 
-      activeCategory = interaction.values[0];
+      currentView = interaction.values[0];
       await interaction.update({
-        embeds: [
-          buildOverviewEmbed({
-            buildEmbed,
-            colors,
-            t,
-            prefix,
-            totalCommands: uniqueCommands.length,
-            categories,
-            selectedCategory: activeCategory,
-            commands: getCategoryCommands(activeCategory),
-            botUser
-          })
-        ],
-        components: buildRows(activeCategory)
+        embeds: [renderOverview(currentView)],
+        components: buildRows(currentView)
       });
     });
 
     collector.on('end', async () => {
       try {
-        const rows = buildRows(activeCategory);
+        const rows = buildRows(currentView);
         rows[0].components[0].setDisabled(true);
         await sent.edit({ components: rows });
       } catch (error) {

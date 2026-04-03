@@ -1,4 +1,6 @@
 const { resolveMember } = require('../../app/command-utils');
+const { EMBED_COLORS } = require('../../config/constants');
+const { sendModerationLog } = require('../../services/moderation/modlog');
 
 module.exports = {
   meta: {
@@ -29,6 +31,51 @@ module.exports = {
       userId: member.id,
       moderatorId: message.author.id,
       reason
+    });
+
+    const config = await repos.automodRepo.getConfig(message.guild.id);
+    const warnCount = await repos.warningsRepo.countWarningsWithinWindow({
+      guildId: message.guild.id,
+      userId: member.id,
+      timeWindowSeconds: config.timeWindow
+    });
+
+    await sendModerationLog({
+      guild: message.guild,
+      repos,
+      color: EMBED_COLORS.WARNING,
+      title: t('moderation.responses.logTitle', {
+        action: t('moderation.actions.warn')
+      }),
+      description: reason || t('moderation.responses.noReason'),
+      thumbnail: member.user.displayAvatarURL({ size: 256 }),
+      fields: [
+        {
+          name: t('moderation.labels.user'),
+          value: `${member.user.tag} (${member.id})`,
+          inline: false
+        },
+        {
+          name: t('moderation.labels.moderator'),
+          value: `${message.author.tag} (${message.author.id})`,
+          inline: false
+        },
+        {
+          name: t('moderation.labels.warningId'),
+          value: `${warning.id}`,
+          inline: true
+        },
+        {
+          name: t('moderation.labels.warnCount'),
+          value: `${warnCount}`,
+          inline: true
+        },
+        {
+          name: t('moderation.labels.reason'),
+          value: reason || t('moderation.responses.noReason'),
+          inline: false
+        }
+      ]
     });
 
     await respond({

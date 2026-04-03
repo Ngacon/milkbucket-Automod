@@ -1,5 +1,6 @@
 const { resolveMember, resolveUser, getModerationBlock } = require('../../app/command-utils');
-const { BOT_EMOJIS } = require('../../config/constants');
+const { BOT_EMOJIS, EMBED_COLORS } = require('../../config/constants');
+const { sendModerationLog } = require('../../services/moderation/modlog');
 
 module.exports = {
   meta: {
@@ -13,7 +14,7 @@ module.exports = {
     descriptionKey: 'admin.descriptions.ban',
     guildOnly: true
   },
-  async execute({ client, message, args, t, respond }) {
+  async execute({ client, message, args, t, respond, repos }) {
     const targetArg = args.shift();
     const reason = args.join(' ').trim() || null;
     const member = await resolveMember(message, targetArg);
@@ -34,6 +35,33 @@ module.exports = {
       }
 
       await member.ban({ reason: reason || undefined });
+      await sendModerationLog({
+        guild: message.guild,
+        repos,
+        color: EMBED_COLORS.ERROR,
+        title: t('moderation.responses.logTitle', {
+          action: t('moderation.actions.ban')
+        }),
+        description: reason || t('moderation.responses.noReason'),
+        thumbnail: member.user.displayAvatarURL({ size: 256 }),
+        fields: [
+          {
+            name: t('moderation.labels.user'),
+            value: `${member.user.tag} (${member.id})`,
+            inline: false
+          },
+          {
+            name: t('moderation.labels.moderator'),
+            value: `${message.author.tag} (${message.author.id})`,
+            inline: false
+          },
+          {
+            name: t('moderation.labels.reason'),
+            value: reason || t('moderation.responses.noReason'),
+            inline: false
+          }
+        ]
+      });
       await respond({
         author: {
           name: member.user.tag,
@@ -48,6 +76,33 @@ module.exports = {
     const user = await resolveUser(client, targetArg);
     if (user && message.guild) {
       await message.guild.members.ban(user.id, { reason: reason || undefined });
+      await sendModerationLog({
+        guild: message.guild,
+        repos,
+        color: EMBED_COLORS.ERROR,
+        title: t('moderation.responses.logTitle', {
+          action: t('moderation.actions.ban')
+        }),
+        description: reason || t('moderation.responses.noReason'),
+        thumbnail: user.displayAvatarURL({ size: 256 }),
+        fields: [
+          {
+            name: t('moderation.labels.user'),
+            value: `${user.tag} (${user.id})`,
+            inline: false
+          },
+          {
+            name: t('moderation.labels.moderator'),
+            value: `${message.author.tag} (${message.author.id})`,
+            inline: false
+          },
+          {
+            name: t('moderation.labels.reason'),
+            value: reason || t('moderation.responses.noReason'),
+            inline: false
+          }
+        ]
+      });
       await respond({
         description: t('common.responses.success')
       });

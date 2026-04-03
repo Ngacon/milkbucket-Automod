@@ -1,5 +1,6 @@
 const { parseDuration, resolveMember, getModerationBlock } = require('../../app/command-utils');
-const { BOT_EMOJIS } = require('../../config/constants');
+const { BOT_EMOJIS, EMBED_COLORS } = require('../../config/constants');
+const { sendModerationLog } = require('../../services/moderation/modlog');
 
 module.exports = {
   meta: {
@@ -13,7 +14,7 @@ module.exports = {
     descriptionKey: 'admin.descriptions.timeout',
     guildOnly: true
   },
-  async execute({ message, args, t, respond }) {
+  async execute({ message, args, t, respond, repos }) {
     const targetArg = args.shift();
     const durationArg = args.shift();
     const reason = args.join(' ').trim() || null;
@@ -42,6 +43,38 @@ module.exports = {
     }
 
     await member.timeout(duration, reason || undefined);
+    await sendModerationLog({
+      guild: message.guild,
+      repos,
+      color: EMBED_COLORS.WARNING,
+      title: t('moderation.responses.logTitle', {
+        action: t('moderation.actions.timeout')
+      }),
+      description: reason || t('moderation.responses.noReason'),
+      thumbnail: member.user.displayAvatarURL({ size: 256 }),
+      fields: [
+        {
+          name: t('moderation.labels.user'),
+          value: `${member.user.tag} (${member.id})`,
+          inline: false
+        },
+        {
+          name: t('moderation.labels.moderator'),
+          value: `${message.author.tag} (${message.author.id})`,
+          inline: false
+        },
+        {
+          name: t('moderation.labels.duration'),
+          value: `${Math.floor(duration / 1000)}s`,
+          inline: true
+        },
+        {
+          name: t('moderation.labels.reason'),
+          value: reason || t('moderation.responses.noReason'),
+          inline: false
+        }
+      ]
+    });
     await respond({
       author: {
         name: member.user.tag,

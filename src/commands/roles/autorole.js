@@ -1,4 +1,4 @@
-const { extractId } = require('../../app/command-utils');
+const { resolveRole } = require('../../app/command-utils');
 
 module.exports = {
   meta: {
@@ -9,12 +9,12 @@ module.exports = {
     botPermissions: ['ManageRoles'],
     cooldown: 2,
     args: { min: 1, max: 1, usage: 'autorole @role' },
+    examples: ['autorole @role', 'autorole Member'],
     descriptionKey: 'roles.descriptions.autorole',
     guildOnly: true
   },
   async execute({ message, args, repos, t, respond }) {
-    const roleId = extractId(args[0]);
-    const role = roleId ? message.guild.roles.cache.get(roleId) : null;
+    const role = resolveRole(message, args[0]);
     if (!role) {
       await respond({
         description: t('common.responses.failure')

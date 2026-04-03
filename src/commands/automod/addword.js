@@ -20,6 +20,7 @@ module.exports = {
     }
 
     await repos.automodRepo.addWord(message.guild.id, word);
+    await repos.automodRepo.setToggle(message.guild.id, 'badwords', true);
     await respond({
       description: t('automod.responses.wordAdded', { word })
     });

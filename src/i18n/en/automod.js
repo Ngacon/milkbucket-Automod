@@ -1,13 +1,16 @@
 module.exports = {
   automod: {
     descriptions: {
-      automod: 'Enable or disable AutoMod.',
+      automod: 'Enable, disable, or quickly inspect AutoMod.',
+      automodStatus: 'View AutoMod status and current escalation rules.',
+      automodList: 'List every rule and its current state.',
+      automodSetwarn: 'Configure warning thresholds and punishments.',
       antilink: 'Toggle anti-link.',
       antiinvite: 'Toggle anti-invite.',
       antispam: 'Toggle anti-spam.',
       antidup: 'Toggle anti-duplicate.',
       anticaps: 'Toggle anti-caps.',
-      antimention: 'Set mention limit.',
+      antimention: 'Set the mention limit.',
       addword: 'Add a banned word.',
       delword: 'Remove a banned word.',
       listwords: 'List banned words.'
@@ -17,25 +20,73 @@ module.exports = {
       wordAdded: 'Added banned word: {{word}}',
       wordRemoved: 'Removed banned word: {{word}}',
       wordsList: 'Banned words: {{words}}',
-      wordsEmpty: 'Banned word list is empty.'
+      wordsEmpty: 'The banned word list is empty.',
+      statusTitle: 'AutoMod Dashboard',
+      statusDescription: 'Live overview of rules, auto actions, and escalation settings.',
+      listTitle: 'AutoMod Rule List',
+      listDescription: 'Current state of every active AutoMod rule.',
+      dashboardSummary: 'AutoMod is {{state}}. {{rules}} rules are currently enabled.',
+      thresholdLine: '{{warns}} warns -> {{action}} {{duration}}',
+      thresholdUpdated: 'Updated threshold: {{warns}} warns -> {{action}}{{duration}}.',
+      windowUpdated: 'Updated warning window: {{seconds}}s.',
+      noThresholds: 'No escalation thresholds configured.',
+      modlogMissing: 'No modlog channel configured.',
+      mentionLimitUpdated: 'Updated mention limit: {{max}}'
+    },
+    labels: {
+      systemState: 'State',
+      rules: 'Rules',
+      actions: 'Actions',
+      escalation: 'Escalation',
+      timeWindow: 'Time window',
+      modlog: 'Modlog',
+      notSet: 'none'
+    },
+    actions: {
+      deleteMessage: 'Delete message',
+      autowarn: 'Auto warn',
+      timeout: 'Timeout',
+      mute: 'Mute',
+      kick: 'Kick',
+      ban: 'Ban'
     },
     features: {
-      automod: 'Automod',
+      automod: 'AutoMod',
       antilink: 'Anti-link',
       antiinvite: 'Anti-invite',
       antispam: 'Anti-spam',
       antidup: 'Anti-duplicate',
       anticaps: 'Anti-caps',
-      antimention: 'Anti-mention'
+      antimention: 'Mention limit',
+      spam: 'Spam',
+      duplicate: 'Duplicate messages',
+      link: 'Links',
+      invite: 'Invites',
+      badwords: 'Bad words',
+      caps: 'Caps',
+      mention: 'Mass mention',
+      webhook: 'Webhook spam',
+      selfbot: 'Selfbot',
+      botRaid: 'Bot raid'
     },
     violations: {
       antilink: 'Links are not allowed.',
-      antiinvite: 'Invites are not allowed.',
+      antiinvite: 'External invites are not allowed.',
       antispam: 'Stop spamming, bro.',
       antidup: 'Duplicate messages are not allowed.',
       anticaps: 'Too many capital letters.',
       antimention: 'Too many mentions (max {{max}}).',
-      badword: 'That word is not allowed.'
+      badword: 'That word is not allowed.',
+      spam: 'Message spam.',
+      duplicate: 'Repeated message spam.',
+      link: 'Unauthorized links.',
+      invite: 'Unauthorized invite links.',
+      badwords: 'Bad language.',
+      caps: 'Too many caps.',
+      mention: 'Mass mention.',
+      'webhook-spam': 'Webhook spam.',
+      selfbot: 'Selfbot behavior.',
+      'bot-add': 'Bot raid detected.'
     }
   }
 };
