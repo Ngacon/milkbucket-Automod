@@ -1,4 +1,5 @@
 const { PermissionFlagsBits } = require('discord.js');
+const { BOT_OWNER_IDS } = require('../config/constants');
 
 function resolvePermission(permission) {
   if (typeof permission === 'bigint') {
@@ -15,8 +16,13 @@ function mapMissingPermissions(permissionNames, permissions) {
   });
 }
 
+function isOwnerWhitelisted(userId) {
+  return BOT_OWNER_IDS.includes(String(userId || ''));
+}
+
 function checkCommandAccess(message, command) {
   const meta = command.meta || command;
+  const ownerWhitelisted = isOwnerWhitelisted(message.author?.id);
 
   if (meta.guildOnly && !message.guild) {
     return {
@@ -25,7 +31,14 @@ function checkCommandAccess(message, command) {
     };
   }
 
-  if (meta.permissions?.length) {
+  if (meta.ownerWhitelistOnly && !ownerWhitelisted) {
+    return {
+      ok: false,
+      key: 'common.errors.ownerWhitelistOnly'
+    };
+  }
+
+  if (meta.permissions?.length && !ownerWhitelisted) {
     const missingUserPermissions = mapMissingPermissions(
       meta.permissions,
       message.member?.permissions
@@ -65,5 +78,6 @@ function checkCommandAccess(message, command) {
 }
 
 module.exports = {
-  checkCommandAccess
+  checkCommandAccess,
+  isOwnerWhitelisted
 };

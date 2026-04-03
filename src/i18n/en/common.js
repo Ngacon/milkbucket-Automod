@@ -28,6 +28,7 @@ module.exports = {
       generic: 'An error occurred while processing the command.',
       guildOnly: 'This command can only be used inside a server.',
       missingUserPermissions: 'You are missing permissions: {{permissions}}',
+      ownerWhitelistOnly: 'Only whitelisted owners can change AutoMod settings.',
       missingBotPermissions: 'I am missing permissions: {{permissions}}',
       targetAboveBot:
         'I cannot manage {{user}} because they are higher than the bot in the role hierarchy.',

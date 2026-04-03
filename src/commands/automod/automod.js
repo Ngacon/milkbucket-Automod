@@ -1,4 +1,5 @@
 const { BOT_EMOJIS } = require('../../config/constants');
+const { isOwnerWhitelisted } = require('../../app/guards');
 const {
   formatToggleState,
   buildActionLines,
@@ -61,6 +62,15 @@ module.exports = {
           usage: `${prefix}automod [enable|disable]`
         })}`,
         thumbnail: BOT_EMOJIS.BROWTH.imageUrl
+      });
+      return;
+    }
+
+    if (!isOwnerWhitelisted(message.author.id)) {
+      await respond({
+        color: colors.ERROR,
+        description: `${BOT_EMOJIS.USER_PERMISSIONS.mention} ${t('common.errors.ownerWhitelistOnly')}`,
+        thumbnail: BOT_EMOJIS.USER_PERMISSIONS.imageUrl
       });
       return;
     }

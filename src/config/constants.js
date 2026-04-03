@@ -6,6 +6,10 @@ const DEFAULT_PREFIXES = ['m!', 'm?'];
 const MAX_PREFIX_LENGTH = 10;
 const MIN_PREFIX_LENGTH = 1;
 const SETTINGS_CACHE_TTL_SECONDS = 60 * 60;
+const BOT_OWNER_IDS = String(process.env.BOT_OWNER_IDS || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 const EMBED_COLORS = {
   PRIMARY: 0xffffff,
@@ -42,6 +46,7 @@ module.exports = {
   MAX_PREFIX_LENGTH,
   MIN_PREFIX_LENGTH,
   SETTINGS_CACHE_TTL_SECONDS,
+  BOT_OWNER_IDS,
   EMBED_COLORS,
   BOT_EMOJIS
 };

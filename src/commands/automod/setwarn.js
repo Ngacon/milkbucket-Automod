@@ -13,6 +13,7 @@ module.exports = {
     aliases: ['setwarn'],
     category: 'automod',
     permissions: ['ManageGuild'],
+    ownerWhitelistOnly: true,
     botPermissions: ['ManageMessages'],
     cooldown: 2,
     args: {

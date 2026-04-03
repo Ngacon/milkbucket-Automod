@@ -4,6 +4,7 @@ module.exports = {
     aliases: [],
     category: 'automod',
     permissions: ['ManageGuild'],
+    ownerWhitelistOnly: true,
     botPermissions: ['ManageMessages'],
     cooldown: 2,
     args: { min: 1, max: 1, usage: 'antiinvite on|off' },

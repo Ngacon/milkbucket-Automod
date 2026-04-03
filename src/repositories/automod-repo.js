@@ -269,16 +269,37 @@ class AutomodRepository {
       throw new Error('Invalid automod field.');
     }
 
+    const ruleFields = new Set([
+      'antilink',
+      'antiinvite',
+      'antispam',
+      'antidup',
+      'anticaps',
+      'antiraid',
+      'badwords',
+      'webhookspam',
+      'selfbot',
+      'botraid'
+    ]);
+
     await this.ensureSettingsRow(guildId);
-    await this.pool.query(
-      `
-        UPDATE automod_settings
-        SET ${field} = $2,
-            updated_at = NOW()
-        WHERE guild_id = $1
-      `,
-      [guildId, value]
-    );
+    const query =
+      ruleFields.has(field) && value === true
+        ? `
+            UPDATE automod_settings
+            SET ${field} = $2,
+                enabled = TRUE,
+                updated_at = NOW()
+            WHERE guild_id = $1
+          `
+        : `
+            UPDATE automod_settings
+            SET ${field} = $2,
+                updated_at = NOW()
+            WHERE guild_id = $1
+          `;
+
+    await this.pool.query(query, [guildId, value]);
 
     await this.invalidateCaches(guildId);
     return this.getSettings(guildId);
@@ -290,6 +311,7 @@ class AutomodRepository {
       `
         UPDATE automod_settings
         SET antimention = $2,
+            enabled = CASE WHEN $2 > 0 THEN TRUE ELSE enabled END,
             updated_at = NOW()
         WHERE guild_id = $1
       `,
@@ -317,14 +339,29 @@ class AutomodRepository {
   }
 
   async addWord(guildId, word) {
-    await this.pool.query(
-      `
-        INSERT INTO automod_words (guild_id, word)
-        VALUES ($1, $2)
-        ON CONFLICT (guild_id, word) DO NOTHING
-      `,
-      [guildId, word]
-    );
+    await this.ensureSettingsRow(guildId);
+    await Promise.all([
+      this.pool.query(
+        `
+          INSERT INTO automod_words (guild_id, word)
+          VALUES ($1, $2)
+          ON CONFLICT (guild_id, word) DO NOTHING
+        `,
+        [guildId, word]
+      ),
+      this.pool.query(
+        `
+          UPDATE automod_settings
+          SET badwords = TRUE,
+              enabled = TRUE,
+              updated_at = NOW()
+          WHERE guild_id = $1
+        `,
+        [guildId]
+      )
+    ]);
+
+    await this.invalidateCaches(guildId);
   }
 
   async removeWord(guildId, word) {

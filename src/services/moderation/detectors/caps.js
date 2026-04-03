@@ -1,11 +1,51 @@
-function countCapsRatio(content) {
-  const letters = String(content || '').replace(/[^a-zA-Z]/g, '');
-  if (letters.length < 12) {
-    return 0;
+function getLetters(content) {
+  return String(content || '').match(/\p{L}/gu) || [];
+}
+
+function countUppercaseWords(content) {
+  return String(content || '')
+    .split(/\s+/)
+    .map((token) => token.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter(Boolean)
+    .filter((token) => {
+      const letters = token.match(/\p{L}/gu) || [];
+      if (letters.length < 3) {
+        return false;
+      }
+
+      const uppercaseLetters = token.match(/\p{Lu}/gu) || [];
+      return uppercaseLetters.length === letters.length;
+    }).length;
+}
+
+function analyzeCaps(content) {
+  const letters = getLetters(content);
+  const uppercaseLetters = String(content || '').match(/\p{Lu}/gu) || [];
+  const uppercaseWords = countUppercaseWords(content);
+
+  if (letters.length < 6) {
+    return {
+      triggered: false,
+      ratio: 0,
+      letters: letters.length,
+      uppercaseLetters: uppercaseLetters.length,
+      uppercaseWords
+    };
   }
 
-  const caps = letters.replace(/[^A-Z]/g, '').length;
-  return caps / letters.length;
+  const ratio = uppercaseLetters.length / letters.length;
+  const triggered =
+    ratio >= 0.7 ||
+    uppercaseWords >= 3 ||
+    (uppercaseLetters.length >= 10 && ratio >= 0.6);
+
+  return {
+    triggered,
+    ratio,
+    letters: letters.length,
+    uppercaseLetters: uppercaseLetters.length,
+    uppercaseWords
+  };
 }
 
 module.exports = {
@@ -20,14 +60,14 @@ module.exports = {
       return null;
     }
 
-    const ratio = countCapsRatio(ctx.message.content);
-    if (ratio < 0.75) {
+    const analysis = analyzeCaps(ctx.message.content);
+    if (!analysis.triggered) {
       return null;
     }
 
     return {
       triggered: true,
-      severity: 1,
+      severity: analysis.ratio >= 0.9 || analysis.uppercaseWords >= 4 ? 2 : 1,
       reason: 'Viết hoa quá nhiều',
       flags: {
         autowarn: true,
@@ -35,7 +75,10 @@ module.exports = {
         escalate: true
       },
       meta: {
-        ratio
+        ratio: analysis.ratio,
+        letters: analysis.letters,
+        uppercaseLetters: analysis.uppercaseLetters,
+        uppercaseWords: analysis.uppercaseWords
       }
     };
   }

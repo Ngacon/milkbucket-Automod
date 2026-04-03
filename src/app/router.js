@@ -133,7 +133,7 @@ function decorateErrorOptions(key, description) {
     };
   }
 
-  if (key === 'common.errors.missingUserPermissions') {
+  if (key === 'common.errors.missingUserPermissions' || key === 'common.errors.ownerWhitelistOnly') {
     return {
       description: `${BOT_EMOJIS.USER_PERMISSIONS.mention} ${description}`,
       thumbnail: BOT_EMOJIS.USER_PERMISSIONS.imageUrl

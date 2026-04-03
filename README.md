@@ -94,9 +94,18 @@ Optional:
 - `ENABLE_REDIS_CACHE`
 - `LOG_COMMANDS`
 - `REDIS_KEY_PREFIX`
+- `BOT_OWNER_IDS`
 - `PG_POOL_MAX`
 - `PG_IDLE_TIMEOUT_MS`
 - `PG_CONNECT_TIMEOUT_MS`
+
+AutoMod change protection:
+
+```text
+BOT_OWNER_IDS=123456789012345678,987654321098765432
+```
+
+Only IDs inside `BOT_OWNER_IDS` can change AutoMod settings such as `automod enable`, `anticaps`, `antispam`, `antilink`, `antimention`, `addword`, `delword`, and `automod setwarn`.
 
 ### Local Development
 
@@ -212,9 +221,18 @@ Tùy chọn:
 - `ENABLE_REDIS_CACHE`
 - `LOG_COMMANDS`
 - `REDIS_KEY_PREFIX`
+- `BOT_OWNER_IDS`
 - `PG_POOL_MAX`
 - `PG_IDLE_TIMEOUT_MS`
 - `PG_CONNECT_TIMEOUT_MS`
+
+Bảo vệ chỉnh sửa AutoMod:
+
+```text
+BOT_OWNER_IDS=123456789012345678,987654321098765432
+```
+
+Chỉ các ID nằm trong `BOT_OWNER_IDS` mới sửa được AutoMod, ví dụ `automod enable`, `anticaps`, `antispam`, `antilink`, `antimention`, `addword`, `delword`, `automod setwarn`.
 
 ### Chạy Local
 
