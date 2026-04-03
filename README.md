@@ -105,7 +105,7 @@ AutoMod change protection:
 BOT_OWNER_IDS=123456789012345678,987654321098765432
 ```
 
-Only IDs inside `BOT_OWNER_IDS` can change AutoMod settings such as `automod enable`, `anticaps`, `antispam`, `antilink`, `antimention`, `addword`, `delword`, and `automod setwarn`.
+Only the guild owner or IDs inside `BOT_OWNER_IDS` can change AutoMod settings such as `automod enable`, `anticaps`, `antispam`, `antilink`, `antimention`, `addword`, `delword`, and `automod setwarn`.
 
 ### Local Development
 
@@ -232,7 +232,7 @@ Bảo vệ chỉnh sửa AutoMod:
 BOT_OWNER_IDS=123456789012345678,987654321098765432
 ```
 
-Chỉ các ID nằm trong `BOT_OWNER_IDS` mới sửa được AutoMod, ví dụ `automod enable`, `anticaps`, `antispam`, `antilink`, `antimention`, `addword`, `delword`, `automod setwarn`.
+Chỉ owner của server hoặc các ID nằm trong `BOT_OWNER_IDS` mới sửa được AutoMod, ví dụ `automod enable`, `anticaps`, `antispam`, `antilink`, `antimention`, `addword`, `delword`, `automod setwarn`.
 
 ### Chạy Local
 

@@ -1,5 +1,5 @@
 const { BOT_EMOJIS } = require('../../config/constants');
-const { isOwnerWhitelisted } = require('../../app/guards');
+const { hasAutomodOwnerAccess } = require('../../app/guards');
 const {
   formatToggleState,
   buildActionLines,
@@ -66,7 +66,7 @@ module.exports = {
       return;
     }
 
-    if (!isOwnerWhitelisted(message.author.id)) {
+    if (!hasAutomodOwnerAccess(message)) {
       await respond({
         color: colors.ERROR,
         description: `${BOT_EMOJIS.USER_PERMISSIONS.mention} ${t('common.errors.ownerWhitelistOnly')}`,

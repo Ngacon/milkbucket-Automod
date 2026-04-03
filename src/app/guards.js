@@ -20,9 +20,17 @@ function isOwnerWhitelisted(userId) {
   return BOT_OWNER_IDS.includes(String(userId || ''));
 }
 
+function isGuildOwner(message) {
+  return Boolean(message?.guild?.ownerId && message.guild.ownerId === message.author?.id);
+}
+
+function hasAutomodOwnerAccess(message) {
+  return isOwnerWhitelisted(message?.author?.id) || isGuildOwner(message);
+}
+
 function checkCommandAccess(message, command) {
   const meta = command.meta || command;
-  const ownerWhitelisted = isOwnerWhitelisted(message.author?.id);
+  const ownerWhitelisted = hasAutomodOwnerAccess(message);
 
   if (meta.guildOnly && !message.guild) {
     return {
@@ -79,5 +87,7 @@ function checkCommandAccess(message, command) {
 
 module.exports = {
   checkCommandAccess,
-  isOwnerWhitelisted
+  isOwnerWhitelisted,
+  isGuildOwner,
+  hasAutomodOwnerAccess
 };
