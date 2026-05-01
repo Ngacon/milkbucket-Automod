@@ -1,4 +1,10 @@
-const { resolveMember, resolveRole } = require('../../app/command-utils');
+const {
+  resolveMember,
+  resolveRole,
+  canActOnRole,
+  canActOnMember
+} = require('../../app/command-utils');
+const { EMBED_COLORS } = require('../../config/constants');
 
 module.exports = {
   meta: {
@@ -8,14 +14,14 @@ module.exports = {
     permissions: ['ManageRoles'],
     botPermissions: ['ManageRoles'],
     cooldown: 2,
-    args: { min: 2, max: 2, usage: 'role-add @user @role' },
+    args: { min: 2, max: 20, usage: 'role-add @user @role' },
     examples: ['role add @user @role', 'role add @user Member'],
     descriptionKey: 'roles.descriptions.roleAdd',
     guildOnly: true
   },
   async execute({ message, args, t, respond }) {
     const member = await resolveMember(message, args[0]);
-    const role = resolveRole(message, args[1]);
+    const role = resolveRole(message, args.slice(1).join(' '));
 
     if (!member || !role) {
       await respond({
@@ -24,8 +30,42 @@ module.exports = {
       return;
     }
 
+    const roleAccess = canActOnRole(message, role);
+    if (!roleAccess.ok) {
+      await respond({
+        color: EMBED_COLORS.ERROR,
+        description: t(`roles.responses.${roleAccess.reason}`, {
+          role: role.name
+        })
+      });
+      return;
+    }
+
+    if (!canActOnMember(message, member)) {
+      await respond({
+        color: EMBED_COLORS.ERROR,
+        description: t('roles.responses.memberAboveUser', {
+          user: member.user.tag
+        })
+      });
+      return;
+    }
+
+    if (member.roles.cache.has(role.id)) {
+      await respond({
+        color: EMBED_COLORS.WARNING,
+        description: t('roles.responses.roleAlreadyAssigned', {
+          role: role.name,
+          user: member.user.tag
+        })
+      });
+      return;
+    }
+
     await member.roles.add(role);
     await respond({
+      color: EMBED_COLORS.ACCENT,
+      title: t('roles.responses.roleAddTitle'),
       author: {
         name: member.user.tag,
         iconURL: member.user.displayAvatarURL({ size: 128 })
@@ -34,8 +74,19 @@ module.exports = {
       description: t('roles.responses.roleAdded', {
         role: role.name,
         user: member.user.tag
-      })
+      }),
+      fields: [
+        {
+          name: t('roles.labels.member'),
+          value: `${member.user.tag}\n\`${member.id}\``,
+          inline: true
+        },
+        {
+          name: t('roles.labels.role'),
+          value: `${role}\n\`${role.id}\``,
+          inline: true
+        }
+      ]
     });
   }
 };
-

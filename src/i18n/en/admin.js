@@ -24,6 +24,17 @@ module.exports = {
     responses: {
       actionSuccess: '{{action}} succeeded.',
       actionFailure: '{{action}} failed.',
+      muteTitle: 'Member Muted',
+      muteApplied: 'Muted {{user}} for {{duration}}.',
+      invalidMuteInput: 'Invalid usage. Use `mute @user 10m [reason]` or `mute @user 1h30m [reason]`.',
+      timeoutTitle: 'Member Timed Out',
+      timeoutApplied: 'Timed out {{user}} for {{duration}}.',
+      invalidTimeoutInput:
+        'Invalid usage. Use `timeout @user 10m [reason]` or `timeout @user 1h30m [reason]`.',
+      unmuteTitle: 'Mute Removed',
+      unmuteApplied: 'Removed mute from {{user}}.',
+      untimeoutTitle: 'Timeout Removed',
+      untimeoutApplied: 'Removed timeout from {{user}}.',
       warnAdded: 'Warned {{user}}. Warning ID: {{id}}',
       warningsHeader: 'Warnings for {{user}}',
       warningsEmpty: 'No warnings found.',

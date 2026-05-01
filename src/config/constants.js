@@ -12,10 +12,18 @@ const BOT_OWNER_IDS = String(process.env.BOT_OWNER_IDS || '')
   .filter(Boolean);
 
 const EMBED_COLORS = {
-  PRIMARY: 0xffffff,
+  PRIMARY: 0xeff6ff,
+  ACCENT: 0x3b82f6,
+  INFO: 0x38bdf8,
   SUCCESS: 0x2ecc71,
   WARNING: 0xf39c12,
-  ERROR: 0xe74c3c
+  ERROR: 0xe74c3c,
+  MUTED: 0x6366f1
+};
+
+const ROLE_BATCH = {
+  CONCURRENCY: 8,
+  CHUNK_SIZE: 20
 };
 
 const BOT_EMOJIS = {
@@ -48,5 +56,6 @@ module.exports = {
   SETTINGS_CACHE_TTL_SECONDS,
   BOT_OWNER_IDS,
   EMBED_COLORS,
-  BOT_EMOJIS
+  BOT_EMOJIS,
+  ROLE_BATCH
 };

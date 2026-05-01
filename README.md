@@ -14,6 +14,7 @@ It is designed for medium-to-large servers that need moderation, automod, utilit
 - Moderation commands: `ban`, `softban`, `hackban`, `kick`, `mute`, `timeout`, `warn`, `clear`, `lock`, `lockdown`, `nuke`
 - Automod commands: `automod`, `antilink`, `antiinvite`, `antispam`, `antidup`, `anticaps`, `antimention`, bad-word list management
 - Role and channel management helpers
+- Reaction role management with add, list, remove, and sync commands using message links or IDs
 - Smart help system with category sidebar and command detail lookup
 
 ### Architecture
@@ -112,12 +113,22 @@ Only the guild owner or IDs inside `BOT_OWNER_IDS` can change AutoMod settings s
 ```bash
 npm install
 npm run dev
+npm test
 ```
 
 Production:
 
 ```bash
 npm start
+```
+
+Reaction role examples:
+
+```text
+m!reaction role 123456789012345678 👍 @Member
+m!reaction role list https://discord.com/channels/111/222/333
+m!reaction role remove https://discord.com/channels/111/222/333 👍 --revoke
+m!reaction role sync https://discord.com/channels/111/222/333
 ```
 
 ### Notes
@@ -141,6 +152,7 @@ Bot hướng tới server vừa và lớn, cần hệ thống quản trị, auto
 - Lệnh quản trị: `ban`, `softban`, `hackban`, `kick`, `mute`, `timeout`, `warn`, `clear`, `lock`, `lockdown`, `nuke`
 - Lệnh automod: `automod`, `antilink`, `antiinvite`, `antispam`, `antidup`, `anticaps`, `antimention`, quản lý từ cấm
 - Bộ công cụ quản lý role và kênh
+- Quản lý reaction role với lệnh thêm, xem, xóa và đồng bộ bằng link hoặc ID tin nhắn
 - Help thông minh với sidebar chọn danh mục và tra cứu chi tiết lệnh
 
 ### Kiến Trúc
@@ -245,6 +257,15 @@ Chạy production:
 
 ```bash
 npm start
+```
+
+Ví dụ reaction role:
+
+```text
+m!reaction role 123456789012345678 👍 @Member
+m!reaction role list https://discord.com/channels/111/222/333
+m!reaction role remove https://discord.com/channels/111/222/333 👍 --revoke
+m!reaction role sync https://discord.com/channels/111/222/333
 ```
 
 ### Ghi Chú

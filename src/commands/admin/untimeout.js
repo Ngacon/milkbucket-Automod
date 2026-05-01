@@ -1,5 +1,5 @@
 const { resolveMember, getModerationBlock } = require('../../app/command-utils');
-const { BOT_EMOJIS } = require('../../config/constants');
+const { BOT_EMOJIS, EMBED_COLORS } = require('../../config/constants');
 
 module.exports = {
   meta: {
@@ -39,13 +39,16 @@ module.exports = {
 
     await member.timeout(null);
     await respond({
+      color: EMBED_COLORS.SUCCESS,
+      title: t('admin.responses.untimeoutTitle'),
       author: {
         name: member.user.tag,
         iconURL: member.user.displayAvatarURL({ size: 128 })
       },
       thumbnail: member.user.displayAvatarURL({ size: 256 }),
-      description: t('common.responses.success')
+      description: t('admin.responses.untimeoutApplied', {
+        user: member.user.tag
+      })
     });
   }
 };
-

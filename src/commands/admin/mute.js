@@ -1,4 +1,9 @@
-const { parseDuration, resolveMember, getModerationBlock } = require('../../app/command-utils');
+const {
+  parseDuration,
+  formatDuration,
+  resolveMember,
+  getModerationBlock
+} = require('../../app/command-utils');
 const { BOT_EMOJIS, EMBED_COLORS } = require('../../config/constants');
 const { sendModerationLog } = require('../../services/moderation/modlog');
 
@@ -10,7 +15,7 @@ module.exports = {
     permissions: ['ModerateMembers'],
     botPermissions: ['ModerateMembers'],
     cooldown: 2,
-    args: { min: 2, max: 3, usage: 'mute @user [time] [reason]' },
+    args: { min: 2, max: 20, usage: 'mute @user [time] [reason]' },
     descriptionKey: 'admin.descriptions.mute',
     guildOnly: true
   },
@@ -23,7 +28,8 @@ module.exports = {
 
     if (!member || !duration) {
       await respond({
-        description: t('common.responses.failure')
+        color: EMBED_COLORS.ERROR,
+        description: t('admin.responses.invalidMuteInput')
       });
       return;
     }
@@ -65,7 +71,7 @@ module.exports = {
         },
         {
           name: t('moderation.labels.duration'),
-          value: `${Math.floor(duration / 1000)}s`,
+          value: formatDuration(duration),
           inline: true
         },
         {
@@ -76,13 +82,34 @@ module.exports = {
       ]
     });
     await respond({
+      color: EMBED_COLORS.MUTED,
+      title: t('admin.responses.muteTitle'),
       author: {
         name: member.user.tag,
         iconURL: member.user.displayAvatarURL({ size: 128 })
       },
       thumbnail: member.user.displayAvatarURL({ size: 256 }),
-      description: t('common.responses.success')
+      description: t('admin.responses.muteApplied', {
+        user: member.user.tag,
+        duration: formatDuration(duration)
+      }),
+      fields: [
+        {
+          name: t('moderation.labels.user'),
+          value: `${member.user.tag}\n\`${member.id}\``,
+          inline: true
+        },
+        {
+          name: t('moderation.labels.duration'),
+          value: formatDuration(duration),
+          inline: true
+        },
+        {
+          name: t('moderation.labels.reason'),
+          value: reason || t('moderation.responses.noReason'),
+          inline: false
+        }
+      ]
     });
   }
 };
-

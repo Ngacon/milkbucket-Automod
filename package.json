@@ -6,7 +6,8 @@
   "main": "src/app/bootstrap.js",
   "scripts": {
     "start": "node src/app/bootstrap.js",
-    "dev": "node --watch src/app/bootstrap.js"
+    "dev": "node --watch src/app/bootstrap.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20.0.0"

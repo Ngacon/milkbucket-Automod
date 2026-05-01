@@ -24,6 +24,17 @@ module.exports = {
     responses: {
       actionSuccess: '{{action}} thành công.',
       actionFailure: '{{action}} thất bại.',
+      muteTitle: 'Mute thành viên',
+      muteApplied: 'Đã mute {{user}} trong {{duration}}.',
+      invalidMuteInput: 'Sai cú pháp. Dùng `mute @user 10m [lý do]` hoặc `mute @user 1h30m [lý do]`.',
+      timeoutTitle: 'Timeout thành viên',
+      timeoutApplied: 'Đã timeout {{user}} trong {{duration}}.',
+      invalidTimeoutInput:
+        'Sai cú pháp. Dùng `timeout @user 10m [lý do]` hoặc `timeout @user 1h30m [lý do]`.',
+      unmuteTitle: 'Gỡ mute',
+      unmuteApplied: 'Đã gỡ mute cho {{user}}.',
+      untimeoutTitle: 'Gỡ timeout',
+      untimeoutApplied: 'Đã gỡ timeout cho {{user}}.',
       warnAdded: 'Đã cảnh cáo {{user}}. ID cảnh cáo: {{id}}',
       warningsHeader: 'Danh sách cảnh cáo của {{user}}',
       warningsEmpty: 'Không có cảnh cáo nào.',

@@ -24,7 +24,15 @@ function buildEmbed(options = {}) {
   }
 
   if (Array.isArray(options.fields) && options.fields.length > 0) {
-    embed.addFields(options.fields);
+    embed.addFields(
+      options.fields
+        .filter((field) => field?.name && field?.value)
+        .map((field) => ({
+          name: String(field.name).slice(0, 256),
+          value: String(field.value).slice(0, 1024),
+          inline: Boolean(field.inline)
+        }))
+    );
   }
 
   if (options.author) {
@@ -33,6 +41,24 @@ function buildEmbed(options = {}) {
 
   if (options.thumbnail) {
     embed.setThumbnail(options.thumbnail);
+  }
+
+  if (options.image) {
+    embed.setImage(options.image);
+  }
+
+  if (options.url) {
+    embed.setURL(options.url);
+  }
+
+  if (options.banner) {
+    const bannerLine = String(options.banner).trim();
+    const currentDescription = embed.data.description || '';
+    embed.setDescription(
+      currentDescription
+        ? `${bannerLine}\n\n${currentDescription}`
+        : bannerLine
+    );
   }
 
   return embed;

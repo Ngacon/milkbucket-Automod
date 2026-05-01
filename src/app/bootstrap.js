@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const path = require('node:path');
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { createLogger } = require('./logger');
 const { installGlobalExceptionHandlers } = require('./exception-handler');
 const { createRouter, loadCommandsFromDirectory } = require('./router');
@@ -81,7 +81,13 @@ async function bootstrap() {
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildMessageReactions,
       GatewayIntentBits.MessageContent
+    ],
+    partials: [
+      Partials.Message,
+      Partials.Channel,
+      Partials.Reaction
     ]
   });
 
