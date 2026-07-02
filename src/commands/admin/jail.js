@@ -156,7 +156,7 @@ module.exports = {
       fields: [
         {
           name: t('moderation.labels.user'),
-          value: `${member.user.tag}\n\\`${member.id}\\``,
+          value: `${member.user.tag}\n\`${member.id}\``,
           inline: true
         },
         {
