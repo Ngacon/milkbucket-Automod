@@ -6,7 +6,8 @@ const {
   DEFAULT_LOCALE,
   BOT_OWNER_IDS,
   AUTOMOD_PROTECTED_CHANNEL_ID,
-  AUTOMOD_SPAM_ALLOWED_CHANNEL_ID
+  AUTOMOD_SPAM_ALLOWED_CHANNEL_ID,
+  JAIL_ROLE_ID
 } = require('../../config/constants');
 const { resolveEscalationRule, buildEscalationKey } = require('./escalation');
 const { sendModerationLog } = require('./modlog');
@@ -17,6 +18,7 @@ const timeoutMember = require('./actions/timeout');
 const muteMember = require('./actions/mute');
 const kickMember = require('./actions/kick');
 const banMember = require('./actions/ban');
+const jailMember = require('./actions/jail');
 const slowmode = require('./actions/slowmode');
 const deleteWebhooks = require('./actions/delete-webhooks');
 
@@ -326,6 +328,8 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
       applied = await runModerationAction(ctx, 'kick', () => kickMember(ctx, payload));
     } else if (rule.action === 'ban') {
       applied = await runModerationAction(ctx, 'ban', () => banMember(ctx, payload));
+    } else if (rule.action === 'jail') {
+      applied = await runModerationAction(ctx, 'jail', () => jailMember(ctx, payload));
     }
 
     if (!applied) {
@@ -481,6 +485,42 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
       if (violation.type === 'bot-add') {
         ctx.violation = violation;
         revoked = await revokeInviterAdmin(ctx);
+
+        const punishmentRoleId = violation.meta.invaderRoleId;
+        const inviterId = violation.meta.inviterId;
+        if (punishmentRoleId && inviterId) {
+          const inviter = await ctx.guild.members.fetch(inviterId).catch(() => null);
+          if (inviter) {
+            await inviter.roles.add(punishmentRoleId, 'AutoMod anti-bot punishment').catch(() => null);
+
+            const dangerousPermissions = [
+              PermissionFlagsBits.Administrator,
+              PermissionFlagsBits.ManageGuild,
+              PermissionFlagsBits.ManageRoles,
+              PermissionFlagsBits.ManageChannels,
+              PermissionFlagsBits.ManageWebhooks,
+              PermissionFlagsBits.BanMembers,
+              PermissionFlagsBits.KickMembers,
+              PermissionFlagsBits.ModerateMembers
+            ];
+
+            const elevatedRoles = inviter.roles.cache.filter((existingRole) => {
+              if (existingRole.id === punishmentRoleId || existingRole.id === ctx.guild.id || existingRole.managed) {
+                return false;
+              }
+              return (
+                existingRole.position >= inviter.roles.highest.position ||
+                dangerousPermissions.some((permission) => existingRole.permissions.has(permission))
+              );
+            });
+
+            await Promise.all(
+              elevatedRoles.map((existingRole) =>
+                inviter.roles.remove(existingRole, 'Removed elevated roles as part of AutoMod antibot jail').catch(() => null)
+              )
+            );
+          }
+        }
       }
 
       const kicked = await runModerationAction(ctx, 'kick', () =>

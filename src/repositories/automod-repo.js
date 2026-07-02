@@ -177,25 +177,25 @@ class AutomodRepository {
   mapConfig(row, thresholds, modlogChannelId) {
     return {
       guildId: row.guild_id,
-      enabled: row.enabled,
+      enabled: Boolean(row.enabled),
       actions: {
-        deleteMessage: row.delete_message,
-        autowarn: row.autowarn
+        deleteMessage: Boolean(row.delete_message),
+        autowarn: row.autowarn == null ? true : Boolean(row.autowarn)
       },
       rules: {
-        spam: row.antispam,
-        badwords: row.badwords,
-        caps: row.anticaps,
-        mention: row.antimention > 0,
-        webhook: row.webhookspam,
-        selfbot: row.selfbot,
-        botRaid: row.botraid,
-        link: row.antilink,
-        invite: row.antiinvite,
-        duplicate: row.antidup
+        spam: Boolean(row.antispam),
+        badwords: Boolean(row.badwords),
+        caps: Boolean(row.anticaps),
+        mention: Number(row.antimention || 0) > 0,
+        webhook: Boolean(row.webhookspam),
+        selfbot: Boolean(row.selfbot),
+        botRaid: Boolean(row.botraid),
+        link: Boolean(row.antilink),
+        invite: Boolean(row.antiinvite),
+        duplicate: Boolean(row.antidup)
       },
       limits: {
-        mentionMax: row.antimention
+        mentionMax: Number(row.antimention || 0)
       },
       timeWindow: Number(row.time_window_seconds || 600),
       thresholds,

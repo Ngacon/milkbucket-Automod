@@ -31,6 +31,12 @@ module.exports = {
       timeoutApplied: 'Đã timeout {{user}} trong {{duration}}.',
       invalidTimeoutInput:
         'Sai cú pháp. Dùng `timeout @user 10m [lý do]` hoặc `timeout @user 1h30m [lý do]`.',
+      invalidJailInput: 'Sai cú pháp. Dùng `jail @user 10m [lý do]`, `jail @user 1h [lý do]`, hoặc `jail @user forever [lý do]`.',
+      jailRoleMissing: 'Role jail chưa được cấu hình trong server.',
+      jailTitle: 'Đã bỏ tù thành viên',
+      jailApplied: 'Đã bỏ tù {{user}} trong {{duration}}.',
+      jailAppliedPermanent: 'Đã bỏ tù {{user}} vĩnh viễn.',
+      jailPermanent: 'Vĩnh viễn',
       unmuteTitle: 'Gỡ mute',
       unmuteApplied: 'Đã gỡ mute cho {{user}}.',
       untimeoutTitle: 'Gỡ timeout',

@@ -31,6 +31,12 @@ module.exports = {
       timeoutApplied: 'Timed out {{user}} for {{duration}}.',
       invalidTimeoutInput:
         'Invalid usage. Use `timeout @user 10m [reason]` or `timeout @user 1h30m [reason]`.',
+      invalidJailInput: 'Invalid usage. Use `jail @user 10m [reason]`, `jail @user 1h [reason]`, or `jail @user forever [reason]`.',
+      jailRoleMissing: 'Jail role is not configured in this server.',
+      jailTitle: 'Member Jailed',
+      jailApplied: 'Jailed {{user}} for {{duration}}.',
+      jailAppliedPermanent: 'Jailed {{user}} permanently.',
+      jailPermanent: 'Permanent',
       unmuteTitle: 'Mute Removed',
       unmuteApplied: 'Removed mute from {{user}}.',
       untimeoutTitle: 'Timeout Removed',

@@ -1,7 +1,8 @@
+const { parseDuration } = require('../../app/command-utils');
 const { BOT_EMOJIS } = require('../../config/constants');
 const { buildThresholdLines } = require('../../services/moderation/config-view');
 
-const VALID_ACTIONS = new Set(['timeout', 'mute', 'kick', 'ban']);
+const VALID_ACTIONS = new Set(['timeout', 'mute', 'kick', 'ban', 'jail']);
 
 function formatDurationText(duration) {
   return duration == null ? '' : ` (${duration}s)`;
@@ -24,6 +25,7 @@ module.exports = {
     examples: [
       'automod setwarn 3 timeout 300',
       'automod setwarn 5 mute',
+      'automod setwarn 7 jail',
       'automod setwarn 10 ban',
       'automod setwarn window 600'
     ],
@@ -59,7 +61,7 @@ module.exports = {
 
     const warns = Number(rawWarns);
     const action = String(rawAction || '').toLowerCase();
-    const duration = rawDuration == null ? null : Number(rawDuration);
+    const duration = rawDuration == null ? null : parseDuration(rawDuration);
 
     if (
       !Number.isInteger(warns) ||
@@ -71,7 +73,7 @@ module.exports = {
       await respond({
         color: colors.WARNING,
         description: `${BOT_EMOJIS.BROWTH.mention} ${t('common.errors.invalidCommandUsage', {
-          usage: `${prefix}automod setwarn <count> <timeout|mute|kick|ban> [duration]`
+          usage: `${prefix}automod setwarn <count> <timeout|mute|kick|ban|jail> [duration]`
         })}`,
         thumbnail: BOT_EMOJIS.BROWTH.imageUrl
       });

@@ -48,7 +48,8 @@ module.exports = {
       timeout: 'Timeout',
       mute: 'Mute',
       kick: 'Kick',
-      ban: 'Ban'
+      ban: 'Ban',
+      jail: 'Jail'
     },
     features: {
       automod: 'AutoMod',

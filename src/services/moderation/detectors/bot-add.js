@@ -1,3 +1,6 @@
+const { AuditLogEvent } = require('discord.js');
+const { JAIL_ROLE_ID } = require('../../config/constants');
+
 module.exports = {
   name: 'bot-add',
   type: 'raid',
@@ -44,7 +47,10 @@ module.exports = {
         escalate: false,
         kick: true
       },
-      meta: {}
+      meta: {
+        inviterId,
+        invaderRoleId: JAIL_ROLE_ID
+      }
     };
   }
 };

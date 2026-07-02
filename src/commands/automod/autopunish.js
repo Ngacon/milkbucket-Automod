@@ -1,12 +1,14 @@
+const { parseDuration } = require('../../app/command-utils');
 const { BOT_EMOJIS } = require('../../config/constants');
 
-const VALID_ACTIONS = new Set(['msg', 'timeout', 'mute', 'kick', 'ban']);
+const VALID_ACTIONS = new Set(['msg', 'timeout', 'mute', 'kick', 'ban', 'jail']);
 const STORED_ACTIONS = {
   msg: 'msg',
   timeout: 'timeout',
   mute: 'mute',
   kick: 'kick',
-  ban: 'ban'
+  ban: 'ban',
+  jail: 'jail'
 };
 
 module.exports = {
@@ -26,6 +28,7 @@ module.exports = {
     examples: [
       'autopunish 1 msg Please stop breaking AutoMod rules',
       'autopunish 3 mute 600',
+      'autopunish 5 jail',
       'autopunish 5 kick'
     ],
     descriptionKey: 'automod.descriptions.autopunish',
@@ -36,7 +39,7 @@ module.exports = {
     const action = String(args[1] || '').toLowerCase();
     const rawTime = args[2];
     const needsTime = action === 'mute' || action === 'timeout';
-    const duration = needsTime ? Number(rawTime) : null;
+    const duration = needsTime ? parseDuration(rawTime) : null;
     const messageText =
       action === 'msg'
         ? args.slice(2).join(' ').trim()
@@ -52,7 +55,7 @@ module.exports = {
       await respond({
         color: colors.WARNING,
         description: `${BOT_EMOJIS.BROWTH.mention} ${t('common.errors.invalidCommandUsage', {
-          usage: `${prefix}autopunish <warns> <msg|timeout|mute|kick|ban> [time] [msg message]`
+          usage: `${prefix}autopunish <warns> <msg|timeout|mute|kick|ban|jail> [time] [msg message]`
         })}`,
         thumbnail: BOT_EMOJIS.BROWTH.imageUrl
       });

@@ -1,5 +1,5 @@
 const { BOT_EMOJIS } = require('../../config/constants');
-const { buildRuleLines } = require('../../services/moderation/config-view');
+const { buildRuleLines, buildThresholdLines } = require('../../services/moderation/config-view');
 
 module.exports = {
   meta: {
@@ -26,6 +26,11 @@ module.exports = {
         {
           name: t('automod.labels.rules'),
           value: buildRuleLines(config, t).join('\n'),
+          inline: false
+        },
+        {
+          name: t('automod.labels.escalation'),
+          value: buildThresholdLines(config, t).join('\n'),
           inline: false
         }
       ]
