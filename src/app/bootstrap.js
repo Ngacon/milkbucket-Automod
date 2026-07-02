@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const http = require('node:http');
 const path = require('node:path');
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { createLogger } = require('./logger');
@@ -157,6 +158,7 @@ async function bootstrap() {
 
     try {
       client.destroy();
+      server?.close();
       await closeRedis(redis);
       await closePostgres(pool);
       logger.info('Shutdown completed');
@@ -177,11 +179,22 @@ async function bootstrap() {
 
   await client.login(process.env.DISCORD_TOKEN);
 
+  const port = Number(process.env.PORT) || 3000;
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end(`${APP_NAME} is running.\n`);
+  });
+
+  server.listen(port, () => {
+    logger.info('HTTP server listening', { port });
+  });
+
   return {
     client,
     pool,
     redis,
-    router
+    router,
+    server
   };
 }
 
