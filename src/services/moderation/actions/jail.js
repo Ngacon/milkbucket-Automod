@@ -1,4 +1,4 @@
-const { JAIL_ROLE_ID } = require('../../config/constants');
+const { JAIL_ROLE_ID } = require('../../../config/constants');
 const { PermissionFlagsBits } = require('discord.js');
 
 const DANGEROUS_PERMISSIONS = [
