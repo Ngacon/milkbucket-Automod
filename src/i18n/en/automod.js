@@ -5,8 +5,6 @@ module.exports = {
       automodStatus: 'View AutoMod status and current escalation rules.',
       automodList: 'List every rule and its current state.',
       automodSetwarn: 'Configure warning thresholds and punishments.',
-      autopunish: 'Configure automatic punishments by warn count.',
-      whitelist: 'Manage the AutoMod whitelist.',
       antilink: 'Toggle anti-link.',
       antiinvite: 'Toggle anti-invite.',
       antispam: 'Toggle anti-spam.',
@@ -47,7 +45,6 @@ module.exports = {
     actions: {
       deleteMessage: 'Delete message',
       autowarn: 'Auto warn',
-      msg: 'DM message',
       timeout: 'Timeout',
       mute: 'Mute',
       kick: 'Kick',

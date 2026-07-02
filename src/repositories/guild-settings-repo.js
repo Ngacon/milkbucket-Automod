@@ -9,13 +9,44 @@ class GuildSettingsRepository {
     this.pool = pool;
     this.redis = redis;
     this.logger = logger;
+    this.memoryCache = new Map();
   }
 
   buildCacheKey(guildId) {
     return `guild-settings:${guildId}`;
   }
 
+  getMemoryCache(guildId) {
+    const entry = this.memoryCache.get(guildId);
+    if (!entry) {
+      return null;
+    }
+
+    if (entry.expiresAt <= Date.now()) {
+      this.memoryCache.delete(guildId);
+      return null;
+    }
+
+    return entry.value;
+  }
+
+  setMemoryCache(settings) {
+    if (!settings?.guildId) {
+      return;
+    }
+
+    this.memoryCache.set(settings.guildId, {
+      value: settings,
+      expiresAt: Date.now() + SETTINGS_CACHE_TTL_SECONDS * 1000
+    });
+  }
+
   async readCache(guildId) {
+    const memoryValue = this.getMemoryCache(guildId);
+    if (memoryValue) {
+      return memoryValue;
+    }
+
     if (!ENABLE_REDIS_CACHE || !this.redis || !guildId) {
       return null;
     }
@@ -28,7 +59,9 @@ class GuildSettingsRepository {
     }
 
     try {
-      return JSON.parse(cachedValue);
+      const parsed = JSON.parse(cachedValue);
+      this.setMemoryCache(parsed);
+      return parsed;
     } catch (error) {
       this.logger.warn('Invalid guild settings cache payload', {
         guildId,
@@ -40,7 +73,13 @@ class GuildSettingsRepository {
   }
 
   async writeCache(settings) {
-    if (!ENABLE_REDIS_CACHE || !this.redis || !settings?.guildId) {
+    if (!settings?.guildId) {
+      return;
+    }
+
+    this.setMemoryCache(settings);
+
+    if (!ENABLE_REDIS_CACHE || !this.redis) {
       return;
     }
 
@@ -128,6 +167,36 @@ class GuildSettingsRepository {
     return settings;
   }
 
+  async setPrefix(guildId, prefix) {
+    const result = await this.pool.query(
+      `
+        INSERT INTO guild_settings (guild_id, prefix, locale)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (guild_id)
+        DO UPDATE SET
+          prefix = EXCLUDED.prefix,
+          updated_at = NOW()
+        RETURNING guild_id, prefix, locale
+      `,
+      [guildId, prefix, DEFAULT_LOCALE]
+    );
+
+    const row = result.rows[0];
+    const settings = {
+      guildId: row.guild_id,
+      prefix: row.prefix || null,
+      locale: row.locale || DEFAULT_LOCALE
+    };
+
+    await this.writeCache(settings);
+    this.logger.info('Guild prefix updated', {
+      guildId,
+      prefix: settings.prefix
+    });
+
+    return settings;
+  }
+
   async setLocale(guildId, locale) {
     const result = await this.pool.query(
       `
@@ -156,6 +225,20 @@ class GuildSettingsRepository {
     });
 
     return settings;
+  }
+
+  async invalidateCache(guildId) {
+    if (!guildId) {
+      return;
+    }
+
+    this.memoryCache.delete(guildId);
+
+    if (!ENABLE_REDIS_CACHE || !this.redis) {
+      return;
+    }
+
+    await this.redis.del(this.buildCacheKey(guildId));
   }
 }
 

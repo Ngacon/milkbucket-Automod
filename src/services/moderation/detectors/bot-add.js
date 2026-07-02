@@ -1,5 +1,3 @@
-const { AuditLogEvent } = require('discord.js');
-
 module.exports = {
   name: 'bot-add',
   type: 'raid',
@@ -46,9 +44,7 @@ module.exports = {
         escalate: false,
         kick: true
       },
-      meta: {
-        inviterId
-      }
+      meta: {}
     };
   }
 };

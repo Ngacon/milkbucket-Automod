@@ -161,6 +161,11 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
       return;
     }
 
+    const prefix = resolvePrefix(message.content);
+    if (!prefix) {
+      return;
+    }
+
     const settings = message.guild
       ? await guildSettingsRepo.getSettings(message.guild.id)
       : {
@@ -169,9 +174,9 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
           locale: DEFAULT_LOCALE
         };
 
-    const prefix = resolvePrefix(message.content, settings.prefix);
+    const resolvedPrefix = resolvePrefix(message.content, settings.prefix) || prefix;
 
-    if (!prefix) {
+    if (!resolvedPrefix) {
       return;
     }
 
@@ -186,6 +191,10 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
     const commandArgs = matchedCommand?.args || [];
     const locale = settings.locale || DEFAULT_LOCALE;
     const t = (key, params) => i18n.t(locale, key, params);
+
+    if (command && message.channel?.sendTyping) {
+      void message.channel.sendTyping();
+    }
 
     if (!command) {
       const attemptedCommand =

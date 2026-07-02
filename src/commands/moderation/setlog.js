@@ -1,6 +1,6 @@
 const { PermissionsBitField } = require('discord.js');
 const { resolveChannel } = require('../../app/command-utils');
-const { AUTOMOD_LOG_CHANNEL_ID, BOT_EMOJIS } = require('../../config/constants');
+const { BOT_EMOJIS } = require('../../config/constants');
 const { sendModerationLog } = require('../../services/moderation/modlog');
 
 module.exports = {
@@ -17,12 +17,7 @@ module.exports = {
     guildOnly: true
   },
   async execute({ message, args, repos, t, respond, colors, prefix }) {
-    const requestedChannel = resolveChannel(message, args.join(' '));
-    const channel = AUTOMOD_LOG_CHANNEL_ID
-      ? message.guild.channels.cache.get(AUTOMOD_LOG_CHANNEL_ID) ||
-        (await message.guild.channels.fetch(AUTOMOD_LOG_CHANNEL_ID).catch(() => null))
-      : requestedChannel;
-
+    const channel = resolveChannel(message, args.join(' '));
     if (!channel?.isTextBased()) {
       await respond({
         color: colors.WARNING,
