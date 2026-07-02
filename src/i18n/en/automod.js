@@ -5,6 +5,7 @@ module.exports = {
       automodStatus: 'View AutoMod status and current escalation rules.',
       automodList: 'List every rule and its current state.',
       automodSetwarn: 'Configure warning thresholds and punishments.',
+      botraid: 'Toggle bot raid protection.',
       antilink: 'Toggle anti-link.',
       antiinvite: 'Toggle anti-invite.',
       antispam: 'Toggle anti-spam.',

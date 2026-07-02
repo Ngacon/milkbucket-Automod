@@ -5,6 +5,7 @@ module.exports = {
       automodStatus: 'Xem trạng thái AutoMod và escalation hiện tại.',
       automodList: 'Xem toàn bộ rule đang bật hoặc tắt.',
       automodSetwarn: 'Đặt mốc cảnh cáo và thang xử phạt.',
+      botraid: 'Bật hoặc tắt bảo vệ bot raid.',
       antilink: 'Bật hoặc tắt chống link.',
       antiinvite: 'Bật hoặc tắt chống invite.',
       antispam: 'Bật hoặc tắt chống spam.',

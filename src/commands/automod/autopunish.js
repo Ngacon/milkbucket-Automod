@@ -1,11 +1,10 @@
 const { parseDuration } = require('../../app/command-utils');
 const { BOT_EMOJIS } = require('../../config/constants');
 
-const VALID_ACTIONS = new Set(['msg', 'timeout', 'mute', 'kick', 'ban', 'jail']);
+const VALID_ACTIONS = new Set(['msg', 'timeout', 'kick', 'ban', 'jail']);
 const STORED_ACTIONS = {
   msg: 'msg',
   timeout: 'timeout',
-  mute: 'mute',
   kick: 'kick',
   ban: 'ban',
   jail: 'jail'
@@ -14,7 +13,7 @@ const STORED_ACTIONS = {
 module.exports = {
   meta: {
     name: 'autopunish',
-    aliases: ['automod autopunish'],
+    aliases: ['automod autopunish', 'automod setwarn', 'setwarn'],
     category: 'automod',
     permissions: ['ManageGuild'],
     ownerWhitelistOnly: true,
@@ -23,11 +22,11 @@ module.exports = {
     args: {
       min: 2,
       max: 80,
-      usage: 'autopunish <warns> <msg|timeout|mute|kick|ban> [time] [msg message]'
+      usage: 'autopunish <warns> <msg|timeout|kick|ban|jail> [time] [msg message]'
     },
     examples: [
       'autopunish 1 msg Please stop breaking AutoMod rules',
-      'autopunish 3 mute 600',
+      'autopunish 3 timeout 600',
       'autopunish 5 jail',
       'autopunish 5 kick'
     ],
@@ -35,27 +34,54 @@ module.exports = {
     guildOnly: true
   },
   async execute({ message, args, repos, t, respond, colors, prefix }) {
-    const warns = Number(args[0]);
-    const action = String(args[1] || '').toLowerCase();
-    const rawTime = args[2];
-    const needsTime = action === 'mute' || action === 'timeout';
+    const [rawWarns, rawAction, ...restArgs] = args;
+
+    if (String(rawWarns).toLowerCase() === 'window') {
+      const seconds = Number(rawAction);
+      if (!Number.isInteger(seconds) || seconds <= 0) {
+        await respond({
+          color: colors.WARNING,
+          description: `${BOT_EMOJIS.BROWTH.mention} ${t('common.errors.invalidCommandUsage', {
+            usage: `${prefix}autopunish window 600`
+          })}`,
+          thumbnail: BOT_EMOJIS.BROWTH.imageUrl
+        });
+        return;
+      }
+
+      await repos.automodRepo.setTimeWindow(message.guild.id, seconds);
+      await respond({
+        color: colors.SUCCESS,
+        description: t('automod.responses.windowUpdated', {
+          seconds
+        }),
+        thumbnail: BOT_EMOJIS.AUTOMOD.imageUrl
+      });
+      return;
+    }
+
+    const warns = Number(rawWarns);
+    const action = String(rawAction || '').toLowerCase();
+    const rawTime = restArgs[0];
+    const needsTime = action === 'timeout';
     const duration = needsTime ? parseDuration(rawTime) : null;
     const messageText =
       action === 'msg'
-        ? args.slice(2).join(' ').trim()
-        : args.slice(needsTime ? 3 : 2).join(' ').replace(/^msg\s+/i, '').trim();
+        ? restArgs.join(' ').trim()
+        : restArgs.slice(needsTime ? 1 : 0).join(' ').replace(/^msg\s+/i, '').trim();
 
     if (
       !Number.isInteger(warns) ||
       warns <= 0 ||
       !VALID_ACTIONS.has(action) ||
       (action === 'msg' && !messageText) ||
+      (needsTime && rawTime == null) ||
       (needsTime && (!Number.isInteger(duration) || duration <= 0))
     ) {
       await respond({
         color: colors.WARNING,
         description: `${BOT_EMOJIS.BROWTH.mention} ${t('common.errors.invalidCommandUsage', {
-          usage: `${prefix}autopunish <warns> <msg|timeout|mute|kick|ban|jail> [time] [msg message]`
+          usage: `${prefix}autopunish <warns> <msg|timeout|kick|ban|jail> [time] [msg message]`
         })}`,
         thumbnail: BOT_EMOJIS.BROWTH.imageUrl
       });

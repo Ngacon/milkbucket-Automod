@@ -1,7 +1,11 @@
 const { resolveMember } = require('../../app/command-utils');
 const { EMBED_COLORS } = require('../../config/constants');
 const { sendModerationLog } = require('../../services/moderation/modlog');
-
+const { resolveEscalationRule } = require('../../services/moderation/escalation');
+const timeoutMember = require('../../services/moderation/actions/timeout');
+const kickMember = require('../../services/moderation/actions/kick');
+const banMember = require('../../services/moderation/actions/ban');
+const jailMember = require('../../services/moderation/actions/jail');
 module.exports = {
   meta: {
     name: 'warn',
@@ -77,6 +81,43 @@ module.exports = {
         }
       ]
     });
+
+    const escalationRule = resolveEscalationRule({
+      warnCount,
+      thresholds: config.thresholds
+    });
+
+    if (escalationRule) {
+      const ctx = {
+        guild: message.guild,
+        member,
+        user: member.user,
+        message,
+        logger: null
+      };
+
+      if (escalationRule.action === 'msg') {
+        await member.send(escalationRule.message || reason || 'You have received a warning.').catch(() => null);
+      } else if (escalationRule.action === 'timeout') {
+        await timeoutMember(ctx, {
+          reason: reason || 'Warning threshold reached',
+          duration: escalationRule.duration
+        }).catch(() => null);
+      } else if (escalationRule.action === 'kick') {
+        await kickMember(ctx, {
+          reason: reason || 'Warning threshold reached'
+        }).catch(() => null);
+      } else if (escalationRule.action === 'ban') {
+        await banMember(ctx, {
+          reason: reason || 'Warning threshold reached'
+        }).catch(() => null);
+      } else if (escalationRule.action === 'jail') {
+        await jailMember(ctx, {
+          reason: reason || 'Warning threshold reached',
+          duration: escalationRule.duration
+        }).catch(() => null);
+      }
+    }
 
     await respond({
       author: {

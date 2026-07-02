@@ -2,7 +2,7 @@ const { parseDuration } = require('../../app/command-utils');
 const { BOT_EMOJIS } = require('../../config/constants');
 const { buildThresholdLines } = require('../../services/moderation/config-view');
 
-const VALID_ACTIONS = new Set(['timeout', 'mute', 'kick', 'ban', 'jail']);
+const VALID_ACTIONS = new Set(['msg', 'timeout', 'kick', 'ban', 'jail']);
 
 function formatDurationText(duration) {
   return duration == null ? '' : ` (${duration}s)`;
@@ -10,8 +10,8 @@ function formatDurationText(duration) {
 
 module.exports = {
   meta: {
-    name: 'automod setwarn',
-    aliases: ['setwarn'],
+    name: 'setwarn-deprecated',
+    aliases: [],
     category: 'automod',
     permissions: ['ManageGuild'],
     ownerWhitelistOnly: true,
@@ -19,14 +19,14 @@ module.exports = {
     cooldown: 2,
     args: {
       min: 2,
-      max: 3,
-      usage: 'automod setwarn <count|window> <action|seconds> [duration]'
+      max: 80,
+      usage: 'setwarn <count|window> <msg|timeout|kick|ban|jail> [time|message]'
     },
     examples: [
       'automod setwarn 3 timeout 300',
-      'automod setwarn 5 mute',
-      'automod setwarn 7 jail',
+      'automod setwarn 5 jail',
       'automod setwarn 10 ban',
+      'automod setwarn 1 msg Please stop breaking AutoMod rules',
       'automod setwarn window 600'
     ],
     descriptionKey: 'automod.descriptions.automodSetwarn',
@@ -61,19 +61,23 @@ module.exports = {
 
     const warns = Number(rawWarns);
     const action = String(rawAction || '').toLowerCase();
-    const duration = rawDuration == null ? null : parseDuration(rawDuration);
+    const needsTime = action === 'timeout' || action === 'mute';
+    const duration = needsTime ? parseDuration(rawDuration) : null;
+    const messageText = action === 'msg' ? args.slice(2).join(' ').trim() : null;
 
     if (
       !Number.isInteger(warns) ||
       warns <= 0 ||
       !VALID_ACTIONS.has(action) ||
-      (action === 'timeout' && rawDuration == null) ||
-      (rawDuration != null && (!Number.isInteger(duration) || duration <= 0))
+      (action === 'msg' && !messageText) ||
+      (needsTime && rawDuration == null) ||
+      (needsTime && (!Number.isInteger(duration) || duration <= 0)) ||
+      (action !== 'msg' && !needsTime && rawDuration != null)
     ) {
       await respond({
         color: colors.WARNING,
         description: `${BOT_EMOJIS.BROWTH.mention} ${t('common.errors.invalidCommandUsage', {
-          usage: `${prefix}automod setwarn <count> <timeout|mute|kick|ban|jail> [duration]`
+          usage: `${prefix}automod setwarn <count> <msg|timeout|mute|kick|ban|jail> [time|message]`
         })}`,
         thumbnail: BOT_EMOJIS.BROWTH.imageUrl
       });
@@ -84,7 +88,8 @@ module.exports = {
       message.guild.id,
       warns,
       action,
-      duration
+      duration,
+      messageText || null
     );
 
     await respond({
