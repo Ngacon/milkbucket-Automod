@@ -51,8 +51,15 @@ async function bootstrap() {
   const pool = createPostgres(postgresLogger);
   await initializePostgres(pool, postgresLogger);
 
-  const redis = createRedis(redisLogger);
-  await initializeRedis(redis);
+  let redis;
+
+  try {
+    redis = createRedis(redisLogger);
+    await initializeRedis(redis);
+  } catch (error) {
+    redisLogger.error('Redis initialization failed — continuing without Redis cache', { error });
+    redis = null;
+  }
 
   const guildSettingsRepo = new GuildSettingsRepository({
     pool,

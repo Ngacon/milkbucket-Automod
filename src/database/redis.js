@@ -23,9 +23,27 @@ function createRedis(logger) {
   return client;
 }
 
+const REDIS_CONNECT_TIMEOUT_MS = Number(process.env.REDIS_CONNECT_TIMEOUT_MS || 10_000);
+
 async function initializeRedis(client) {
-  await client.connect();
-  await client.ping();
+  const connectPromise = (async () => {
+    await client.connect();
+    await client.ping();
+  })();
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`Redis connection timed out after ${REDIS_CONNECT_TIMEOUT_MS}ms`)), REDIS_CONNECT_TIMEOUT_MS)
+  );
+
+  await Promise.race([connectPromise, timeoutPromise]).catch(async (error) => {
+    // Disconnect the client to prevent background reconnection noise
+    try {
+      client.disconnect();
+    } catch {
+      // ignore disconnect errors
+    }
+    throw error;
+  });
 }
 
 async function closeRedis(client) {
