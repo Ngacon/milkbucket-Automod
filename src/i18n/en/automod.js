@@ -46,6 +46,7 @@ module.exports = {
     actions: {
       deleteMessage: 'Delete message',
       autowarn: 'Auto warn',
+      msg: 'DM message',
       timeout: 'Timeout',
       mute: 'Mute',
       kick: 'Kick',

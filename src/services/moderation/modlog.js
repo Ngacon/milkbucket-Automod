@@ -3,9 +3,9 @@ const { AUTOMOD_LOG_CHANNEL_ID, EMBED_COLORS } = require('../../config/constants
 
 async function resolveModlogChannel({ guild, repos, channelId }) {
   const resolvedChannelId =
-    AUTOMOD_LOG_CHANNEL_ID ||
     channelId ||
-    (await repos?.automodRepo?.getModlogChannelId(guild.id));
+    (await repos?.automodRepo?.getModlogChannelId(guild.id)) ||
+    AUTOMOD_LOG_CHANNEL_ID;
 
   if (!resolvedChannelId) {
     return null;

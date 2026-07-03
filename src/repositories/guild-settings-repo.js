@@ -167,36 +167,6 @@ class GuildSettingsRepository {
     return settings;
   }
 
-  async setPrefix(guildId, prefix) {
-    const result = await this.pool.query(
-      `
-        INSERT INTO guild_settings (guild_id, prefix, locale)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (guild_id)
-        DO UPDATE SET
-          prefix = EXCLUDED.prefix,
-          updated_at = NOW()
-        RETURNING guild_id, prefix, locale
-      `,
-      [guildId, prefix, DEFAULT_LOCALE]
-    );
-
-    const row = result.rows[0];
-    const settings = {
-      guildId: row.guild_id,
-      prefix: row.prefix || null,
-      locale: row.locale || DEFAULT_LOCALE
-    };
-
-    await this.writeCache(settings);
-    this.logger.info('Guild prefix updated', {
-      guildId,
-      prefix: settings.prefix
-    });
-
-    return settings;
-  }
-
   async setLocale(guildId, locale) {
     const result = await this.pool.query(
       `

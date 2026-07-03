@@ -152,17 +152,29 @@ function decorateErrorOptions(key, description) {
   };
 }
 
+const COOLDOWN_CLEANUP_INTERVAL = 60_000; // 1 minute
+
 function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, redis, repos }) {
   const registry = buildRegistry(commands, logger.child('registry'));
   const cooldowns = new Map();
 
+  // Periodically clean up stale cooldown entries to prevent memory leak
+  const cooldownCleanupTimer = setInterval(() => {
+    const now = Date.now();
+    for (const [key, expiry] of cooldowns) {
+      if (now >= expiry) {
+        cooldowns.delete(key);
+      }
+    }
+  }, COOLDOWN_CLEANUP_INTERVAL);
+
+  // Allow unref so the timer doesn't keep the process alive
+  if (cooldownCleanupTimer.unref) {
+    cooldownCleanupTimer.unref();
+  }
+
   async function handleMessage(message) {
     if (isIgnorableMessage(message)) {
-      return;
-    }
-
-    const prefix = resolvePrefix(message.content);
-    if (!prefix) {
       return;
     }
 
@@ -174,9 +186,9 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
           locale: DEFAULT_LOCALE
         };
 
-    const resolvedPrefix = resolvePrefix(message.content, settings.prefix) || prefix;
-
-    if (!resolvedPrefix) {
+    // Check custom prefix first, then fall back to default prefixes
+    const prefix = resolvePrefix(message.content, settings.prefix) || resolvePrefix(message.content);
+    if (!prefix) {
       return;
     }
 
@@ -230,8 +242,6 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
     // soon as possible. This reduces the round‑trip time to a few milliseconds.
     // ---------------------------------------------------------------------
     if (command.meta.fast) {
-      // Use a simple emoji or text as a fast acknowledgement. Prefer a custom
-      // fastResponse defined on the command; otherwise fall back to a checkmark.
       const fastResponse = command.meta.fastResponse || '✅';
       try {
         await message.reply({ content: fastResponse, allowedMentions: { repliedUser: false } });

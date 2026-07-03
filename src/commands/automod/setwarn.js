@@ -62,7 +62,9 @@ module.exports = {
     const warns = Number(rawWarns);
     const action = String(rawAction || '').toLowerCase();
     const needsTime = action === 'timeout' || action === 'mute';
-    const duration = needsTime ? parseDuration(rawDuration) : null;
+    // parseDuration returns milliseconds; convert to seconds for storage
+    const durationMs = needsTime ? parseDuration(rawDuration) : null;
+    const duration = durationMs != null ? Math.floor(durationMs / 1000) : null;
     const messageText = action === 'msg' ? args.slice(2).join(' ').trim() : null;
 
     if (
@@ -71,7 +73,7 @@ module.exports = {
       !VALID_ACTIONS.has(action) ||
       (action === 'msg' && !messageText) ||
       (needsTime && rawDuration == null) ||
-      (needsTime && (!Number.isInteger(duration) || duration <= 0)) ||
+      (needsTime && (duration == null || duration <= 0)) ||
       (action !== 'msg' && !needsTime && rawDuration != null)
     ) {
       await respond({

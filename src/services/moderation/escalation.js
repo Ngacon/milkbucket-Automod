@@ -20,11 +20,14 @@ function normalizeThresholds(thresholds = DEFAULT_ESCALATION_THRESHOLDS) {
 function resolveEscalationRule({ warnCount, thresholds }) {
   const normalized = normalizeThresholds(thresholds);
 
-  return (
-    [...normalized]
-      .sort((left, right) => right.warns - left.warns)
-      .find((rule) => warnCount >= rule.warns) || null
-  );
+  // Iterate from highest to lowest threshold without re-sorting
+  for (let i = normalized.length - 1; i >= 0; i--) {
+    if (warnCount >= normalized[i].warns) {
+      return normalized[i];
+    }
+  }
+
+  return null;
 }
 
 function buildEscalationKey(guildId, userId, warns) {

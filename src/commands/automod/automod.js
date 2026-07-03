@@ -24,7 +24,7 @@ module.exports = {
 
     if (!state) {
       const config = await repos.automodRepo.getConfig(message.guild.id);
-      const effectiveModlogChannelId = AUTOMOD_LOG_CHANNEL_ID || config.modlogChannelId;
+      const effectiveModlogChannelId = config.modlogChannelId || AUTOMOD_LOG_CHANNEL_ID;
       await respond({
         color: colors.PRIMARY,
         title: t('automod.responses.statusTitle'),
@@ -102,4 +102,3 @@ module.exports = {
     });
   }
 };
-

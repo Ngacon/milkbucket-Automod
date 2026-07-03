@@ -21,7 +21,7 @@ module.exports = {
   },
   async execute({ message, repos, t, respond, colors }) {
     const config = await repos.automodRepo.getConfig(message.guild.id);
-    const effectiveModlogChannelId = AUTOMOD_LOG_CHANNEL_ID || config.modlogChannelId;
+    const effectiveModlogChannelId = config.modlogChannelId || AUTOMOD_LOG_CHANNEL_ID;
 
     await respond({
       color: colors.PRIMARY,

@@ -64,7 +64,9 @@ module.exports = {
     const action = String(rawAction || '').toLowerCase();
     const rawTime = restArgs[0];
     const needsTime = action === 'timeout';
-    const duration = needsTime ? parseDuration(rawTime) : null;
+    // parseDuration returns milliseconds; convert to seconds for storage
+    const durationMs = needsTime ? parseDuration(rawTime) : null;
+    const duration = durationMs != null ? Math.floor(durationMs / 1000) : null;
     const messageText =
       action === 'msg'
         ? restArgs.join(' ').trim()
@@ -76,7 +78,7 @@ module.exports = {
       !VALID_ACTIONS.has(action) ||
       (action === 'msg' && !messageText) ||
       (needsTime && rawTime == null) ||
-      (needsTime && (!Number.isInteger(duration) || duration <= 0))
+      (needsTime && (duration == null || duration <= 0))
     ) {
       await respond({
         color: colors.WARNING,

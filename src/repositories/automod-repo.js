@@ -64,7 +64,8 @@ class AutomodRepository {
       this.buildConfigCacheKey(guildId),
       this.buildThresholdCacheKey(guildId),
       this.buildModlogCacheKey(guildId),
-      this.buildWhitelistCacheKey(guildId)
+      this.buildWhitelistCacheKey(guildId),
+      this.buildWordsCacheKey(guildId)
     );
   }
 
@@ -276,6 +277,7 @@ class AutomodRepository {
       throw new Error('Invalid automod field.');
     }
 
+    // All rule fields that should auto-enable automod when turned on
     const ruleFields = new Set([
       'antilink',
       'antiinvite',
@@ -379,9 +381,21 @@ class AutomodRepository {
       `,
       [guildId, word]
     );
+
+    await this.invalidateCaches(guildId);
+  }
+
+  buildWordsCacheKey(guildId) {
+    return `automod-words:${guildId}`;
   }
 
   async listWords(guildId) {
+    const cacheKey = this.buildWordsCacheKey(guildId);
+    const cached = await this.readJsonCache(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const result = await this.pool.query(
       `
         SELECT word
@@ -392,7 +406,9 @@ class AutomodRepository {
       [guildId]
     );
 
-    return result.rows.map((row) => row.word);
+    const words = result.rows.map((row) => row.word);
+    await this.writeJsonCache(cacheKey, words);
+    return words;
   }
 
   async addWhitelist(guildId, userId, addedBy) {
