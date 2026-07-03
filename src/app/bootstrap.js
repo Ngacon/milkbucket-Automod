@@ -184,8 +184,7 @@ async function bootstrap() {
     void shutdown('SIGTERM');
   });
 
-  await client.login(process.env.DISCORD_TOKEN);
-
+  // Start HTTP server BEFORE login so Render detects the port immediately
   const port = Number(process.env.PORT) || 3000;
   const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -195,6 +194,8 @@ async function bootstrap() {
   server.listen(port, () => {
     logger.info('HTTP server listening', { port });
   });
+
+  await client.login(process.env.DISCORD_TOKEN);
 
   return {
     client,
