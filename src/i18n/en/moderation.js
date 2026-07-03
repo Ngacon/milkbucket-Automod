@@ -18,11 +18,11 @@ module.exports = {
       warnCount: 'Warn count'
     },
     actions: {
-      warn: 'Warn',
-      ban: 'Ban',
-      kick: 'Kick',
-      mute: 'Mute',
-      timeout: 'Timeout'
+      warn: 'W',
+      ban: 'B',
+      kick: 'K',
+      mute: 'M',
+      timeout: 'T'
     }
   }
 };

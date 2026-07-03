@@ -31,6 +31,7 @@ module.exports = {
       ownerWhitelistOnly: 'Chỉ owner server hoặc owner nằm trong whitelist mới được sửa AutoMod.',
       missingBotPermissions: 'Bot đang thiếu quyền: {{permissions}}',
       targetAboveBot: 'Bot không thể xử lý {{user}} vì target đang cao quyền hơn bot.',
+      cannotTargetSelf: 'Bạn không thể thao tác lên chính mình với lệnh này.',
       invalidCommandUsage: 'Sai cú pháp. Dùng: `{{usage}}`',
       invalidPrefix: 'Prefix không hợp lệ ({{min}}-{{max}} ký tự, không có khoảng trắng).',
       invalidLocale: 'Ngôn ngữ không hợp lệ: {{locales}}',

@@ -30,6 +30,13 @@ module.exports = {
       return;
     }
 
+    if (member.id === message.author.id) {
+      await respond({
+        description: t('common.errors.cannotTargetSelf')
+      });
+      return;
+    }
+
     const warning = await repos.warningsRepo.addWarning({
       guildId: message.guild.id,
       userId: member.id,

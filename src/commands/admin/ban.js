@@ -20,6 +20,13 @@ module.exports = {
     const member = await resolveMember(message, targetArg);
 
     if (member) {
+      if (member.id === message.author.id) {
+        await respond({
+          description: t('common.errors.cannotTargetSelf')
+        });
+        return;
+      }
+
       const moderationBlock = getModerationBlock('ban', member);
       if (moderationBlock) {
         await respond({
@@ -75,6 +82,13 @@ module.exports = {
 
     const user = await resolveUser(client, targetArg);
     if (user && message.guild) {
+      if (user.id === message.author.id) {
+        await respond({
+          description: t('common.errors.cannotTargetSelf')
+        });
+        return;
+      }
+
       await message.guild.members.ban(user.id, { reason: reason || undefined });
       await sendModerationLog({
         guild: message.guild,

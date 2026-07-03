@@ -32,6 +32,7 @@ module.exports = {
       missingBotPermissions: 'I am missing permissions: {{permissions}}',
       targetAboveBot:
         'I cannot manage {{user}} because they are higher than the bot in the role hierarchy.',
+      cannotTargetSelf: 'You cannot target yourself with this command.',
       invalidCommandUsage: 'Invalid usage. Use: `{{usage}}`',
       invalidPrefix:
         'Invalid prefix. Prefix must be between {{min}} and {{max}} characters and contain no whitespace.',
