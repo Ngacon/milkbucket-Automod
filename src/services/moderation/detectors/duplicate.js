@@ -12,6 +12,10 @@ module.exports = {
       return null;
     }
 
+    if (Array.isArray(ctx.config?.spamAllowedChannelIds) && ctx.config.spamAllowedChannelIds.includes(ctx.message.channelId)) {
+      return null;
+    }
+
     const content = String(ctx.message.content || '').trim();
     if (content.length < 3) {
       return null;

@@ -10,6 +10,10 @@ module.exports = {
       return null;
     }
 
+    if (Array.isArray(ctx.config?.spamAllowedChannelIds) && ctx.config.spamAllowedChannelIds.includes(ctx.message.channelId)) {
+      return null;
+    }
+
     const cacheKey = `mod:spam:${ctx.guild.id}:${ctx.user.id}`;
     const count = await ctx.redis.incr(cacheKey);
     if (count === 1) {

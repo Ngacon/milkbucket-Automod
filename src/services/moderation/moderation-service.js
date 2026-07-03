@@ -162,7 +162,10 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
       ...payload,
       client,
       guild,
-      config,
+      config: {
+        ...config,
+        spamAllowedChannelIds: AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS
+      },
       locale,
       redis: moderationRedis,
       repos,
@@ -576,10 +579,6 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
   }
 
   async function handleMessage(message) {
-    if (Array.isArray(AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS) && AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS.includes(message.channelId)) {
-      return null;
-    }
-
     const ctx = await buildContext({
       kind: 'message',
       message,
