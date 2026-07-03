@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const http = require('node:http');
 const path = require('node:path');
+const { once } = require('node:events');
 const { Client, GatewayIntentBits, Partials } = require('discord.js');
 const { createLogger } = require('./logger');
 const { installGlobalExceptionHandlers } = require('./exception-handler');
@@ -151,6 +152,8 @@ async function bootstrap() {
     logger: logger.child('events:reactionRemove')
   });
 
+  const readyPromise = once(client, 'ready');
+
   client.once('ready', () => {
     logger.info('Discord client is ready', {
       app: APP_NAME,
@@ -184,18 +187,18 @@ async function bootstrap() {
     void shutdown('SIGTERM');
   });
 
-  // Start HTTP server BEFORE login so Render detects the port immediately
   const port = Number(process.env.PORT) || 3000;
   const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(`${APP_NAME} is running.\n`);
   });
 
+  await client.login(process.env.DISCORD_TOKEN);
+  await readyPromise;
+
   server.listen(port, () => {
     logger.info('HTTP server listening', { port });
   });
-
-  await client.login(process.env.DISCORD_TOKEN);
 
   return {
     client,
