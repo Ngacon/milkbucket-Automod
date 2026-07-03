@@ -6,7 +6,7 @@ const {
   DEFAULT_LOCALE,
   BOT_OWNER_IDS,
   AUTOMOD_PROTECTED_CHANNEL_ID,
-  AUTOMOD_SPAM_ALLOWED_CHANNEL_ID,
+  AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS,
   JAIL_ROLE_ID
 } = require('../../config/constants');
 const { resolveEscalationRule, buildEscalationKey } = require('./escalation');
@@ -576,7 +576,7 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
   }
 
   async function handleMessage(message) {
-    if (message.channelId === AUTOMOD_SPAM_ALLOWED_CHANNEL_ID) {
+    if (Array.isArray(AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS) && AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS.includes(message.channelId)) {
       return null;
     }
 
