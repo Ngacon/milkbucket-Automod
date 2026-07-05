@@ -1,5 +1,5 @@
-const { resolveMember } = require('../../app/command-utils');
-const { EMBED_COLORS } = require('../../config/constants');
+const { resolveMember, getModerationBlock } = require('../../app/command-utils');
+const { BOT_EMOJIS, EMBED_COLORS } = require('../../config/constants');
 const { sendModerationLog } = require('../../services/moderation/modlog');
 const { resolveEscalationRule } = require('../../services/moderation/escalation');
 const timeoutMember = require('../../services/moderation/actions/timeout');
@@ -33,6 +33,20 @@ module.exports = {
     if (member.id === message.author.id) {
       await respond({
         description: t('common.errors.cannotTargetSelf')
+      });
+      return;
+    }
+
+    const moderationBlock = getModerationBlock('warn', member, message);
+    if (moderationBlock) {
+      await respond({
+        color: EMBED_COLORS.ERROR,
+        author: {
+          name: member.user.tag,
+          iconURL: member.user.displayAvatarURL({ size: 128 })
+        },
+        description: `${BOT_EMOJIS.HIERARCHY.mention} ${t(moderationBlock.key, moderationBlock.params)}`,
+        thumbnail: BOT_EMOJIS.HIERARCHY.imageUrl
       });
       return;
     }

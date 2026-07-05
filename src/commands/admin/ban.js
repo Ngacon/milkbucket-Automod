@@ -27,7 +27,7 @@ module.exports = {
         return;
       }
 
-      const moderationBlock = getModerationBlock('ban', member);
+      const moderationBlock = getModerationBlock('ban', member, message);
       if (moderationBlock) {
         await respond({
           color: 0xe74c3c,

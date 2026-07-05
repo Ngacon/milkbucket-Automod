@@ -34,7 +34,7 @@ module.exports = {
       return;
     }
 
-    const moderationBlock = getModerationBlock('timeout', member);
+    const moderationBlock = getModerationBlock('timeout', member, message);
     if (moderationBlock) {
       await respond({
         color: EMBED_COLORS.ERROR,

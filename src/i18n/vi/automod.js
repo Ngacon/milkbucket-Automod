@@ -14,7 +14,8 @@ module.exports = {
       antimention: 'Đặt giới hạn số người được tag.',
       addword: 'Thêm từ cấm.',
       delword: 'Xóa từ cấm.',
-      listwords: 'Xem danh sách từ cấm.'
+      listwords: 'Xem danh sách từ cấm.',
+      antispamchannel: 'Quản lý kênh được phép spam.'
     },
     responses: {
       toggled: 'Đã {{state}} {{feature}}.',
@@ -32,7 +33,12 @@ module.exports = {
       windowUpdated: 'Đã cập nhật cửa sổ cảnh cáo: {{seconds}}s.',
       noThresholds: 'Chưa có mốc escalation.',
       modlogMissing: 'Chưa cấu hình modlog.',
-      mentionLimitUpdated: 'Đã cập nhật giới hạn tag: {{max}}'
+      mentionLimitUpdated: 'Đã cập nhật giới hạn tag: {{max}}',
+      alreadyWhitelisted: 'đã nằm trong danh sách cho phép.',
+      notWhitelisted: 'không nằm trong danh sách cho phép.',
+      invalidChannel: 'Kênh không hợp lệ. Vui lòng tag hoặc cung cấp ID kênh text.',
+      added: 'đã thêm',
+      removed: 'đã xóa'
     },
     labels: {
       systemState: 'Trạng thái',
@@ -90,6 +96,11 @@ module.exports = {
       'webhook-spam': 'Webhook spam.',
       selfbot: 'Hành vi selfbot.',
       'bot-add': 'Bot raid detected.'
+    },
+    errors: {
+      alreadyWhitelisted: 'đã nằm trong danh sách cho phép.',
+      notWhitelisted: 'không nằm trong danh sách cho phép.',
+      invalidChannel: 'Kênh không hợp lệ. Vui lòng tag hoặc cung cấp ID kênh text.'
     }
   }
 };

@@ -6,7 +6,6 @@ const {
   DEFAULT_LOCALE,
   BOT_OWNER_IDS,
   AUTOMOD_PROTECTED_CHANNEL_ID,
-  AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS,
   JAIL_ROLE_ID
 } = require('../../config/constants');
 const { resolveEscalationRule, buildEscalationKey } = require('./escalation');
@@ -162,10 +161,7 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
       ...payload,
       client,
       guild,
-      config: {
-        ...config,
-        spamAllowedChannelIds: AUTOMOD_SPAM_ALLOWED_CHANNEL_IDS
-      },
+      config,
       locale,
       redis: moderationRedis,
       repos,

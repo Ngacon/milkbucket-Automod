@@ -23,7 +23,7 @@ module.exports = {
       return;
     }
 
-    const moderationBlock = getModerationBlock('unmute', member);
+    const moderationBlock = getModerationBlock('unmute', member, message);
     if (moderationBlock) {
       await respond({
         color: 0xe74c3c,

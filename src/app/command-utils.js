@@ -120,7 +120,7 @@ async function resolveUser(client, input) {
   return client.users.fetch(id).catch(() => null);
 }
 
-function getModerationBlock(commandName, member) {
+function getModerationBlock(commandName, member, message) {
   if (!member) {
     return null;
   }
@@ -146,6 +146,15 @@ function getModerationBlock(commandName, member) {
   }
 
   if (['mute', 'unmute', 'timeout', 'untimeout'].includes(normalizedCommand) && !member.moderatable) {
+    return {
+      key: 'common.errors.targetAboveBot',
+      params: {
+        user: member.user.tag
+      }
+    };
+  }
+
+  if (message && !canActOnMember(message, member)) {
     return {
       key: 'common.errors.targetAboveBot',
       params: {

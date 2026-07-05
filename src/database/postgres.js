@@ -70,7 +70,8 @@ async function initializePostgres(pool, logger) {
     ADD COLUMN IF NOT EXISTS botraid BOOLEAN NOT NULL DEFAULT FALSE,
     ADD COLUMN IF NOT EXISTS delete_message BOOLEAN NOT NULL DEFAULT TRUE,
     ADD COLUMN IF NOT EXISTS autowarn BOOLEAN NOT NULL DEFAULT TRUE,
-    ADD COLUMN IF NOT EXISTS time_window_seconds INTEGER NOT NULL DEFAULT 600;
+    ADD COLUMN IF NOT EXISTS time_window_seconds INTEGER NOT NULL DEFAULT 600,
+    ADD COLUMN IF NOT EXISTS spam_allowed_channel_ids TEXT[];
   `);
 
   await pool.query(`

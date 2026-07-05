@@ -175,7 +175,7 @@ class AutomodRepository {
     return channelId;
   }
 
-  mapConfig(row, thresholds, modlogChannelId) {
+mapConfig(row, thresholds, modlogChannelId) {
     return {
       guildId: row.guild_id,
       enabled: Boolean(row.enabled),
@@ -200,7 +200,8 @@ class AutomodRepository {
       },
       timeWindow: Number(row.time_window_seconds || 600),
       thresholds,
-      modlogChannelId
+      modlogChannelId,
+      spamAllowedChannelIds: Array.isArray(row.spam_allowed_channel_ids) ? row.spam_allowed_channel_ids.map(String) : []
     };
   }
 
@@ -341,6 +342,22 @@ class AutomodRepository {
         WHERE guild_id = $1
       `,
       [guildId, timeWindowSeconds]
+    );
+
+    await this.invalidateCaches(guildId);
+    return this.getSettings(guildId);
+  }
+
+  async setSpamAllowedChannelIds(guildId, channelIds) {
+    await this.ensureSettingsRow(guildId);
+    await this.pool.query(
+      `
+        UPDATE automod_settings
+        SET spam_allowed_channel_ids = $2,
+            updated_at = NOW()
+        WHERE guild_id = $1
+      `,
+      [guildId, channelIds]
     );
 
     await this.invalidateCaches(guildId);

@@ -23,7 +23,7 @@ module.exports = {
       return;
     }
 
-    const moderationBlock = getModerationBlock('untimeout', member);
+    const moderationBlock = getModerationBlock('untimeout', member, message);
     if (moderationBlock) {
       await respond({
         color: 0xe74c3c,

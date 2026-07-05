@@ -14,7 +14,8 @@ module.exports = {
       antimention: 'Set the mention limit.',
       addword: 'Add a banned word.',
       delword: 'Remove a banned word.',
-      listwords: 'List banned words.'
+      listwords: 'List banned words.',
+      antispamchannel: 'Manage channels allowed to spam.'
     },
     responses: {
       toggled: '{{feature}} is now {{state}}.',
@@ -32,7 +33,10 @@ module.exports = {
       windowUpdated: 'Updated warning window: {{seconds}}s.',
       noThresholds: 'No escalation thresholds configured.',
       modlogMissing: 'No modlog channel configured.',
-      mentionLimitUpdated: 'Updated mention limit: {{max}}'
+      mentionLimitUpdated: 'Updated mention limit: {{max}}',
+      alreadyWhitelisted: 'is already whitelisted.',
+      notWhitelisted: 'is not whitelisted.',
+      invalidChannel: 'Invalid channel. Please mention or provide a text channel ID.'
     },
     labels: {
       systemState: 'State',
@@ -90,6 +94,11 @@ module.exports = {
       'webhook-spam': 'Webhook spam.',
       selfbot: 'Selfbot behavior.',
       'bot-add': 'Bot raid detected.'
+    },
+    errors: {
+      alreadyWhitelisted: 'is already whitelisted.',
+      notWhitelisted: 'is not whitelisted.',
+      invalidChannel: 'Invalid channel. Please mention or provide a text channel ID.'
     }
   }
 };
