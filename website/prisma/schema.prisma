@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id              String   @id
+  name            String
+  iconUrl         String?
+  ownerId         String
+  memberCount     Int      @default(0)
+  channelCount    Int      @default(0)
+  roleCount       Int      @default(0)
+  prefix          String   @default("m!")
+  language        String   @default("vi")
+  createdAt       DateTime @default(now())
+  joinedAt        DateTime @default(now())
+  logChannelId    String?
+
+  warnings        DashboardWarning[]
+  mutes           Mute[]
+  bans            Ban[]
+  automodConfigs  AutoModConfig[]
+  badWords        DashboardBadWord[]
+  reactionRoles   DashboardReactionRole[]
+  commandLogs     CommandLog[]
+  automodEvents   AutoModEvent[]
+  members         Member[]
+}
+
+model Member {
+  id          String   @id
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  username    String
+  displayName String?
+  discriminator String?
+  avatarUrl   String?
+  bot         Boolean  @default(false)
+  joinedAt    DateTime @default(now())
+  roles       String   @default("[]")
+
+  warnings    DashboardWarning[]
+  mutes       Mute[]
+  bans        Ban[]
+
+  @@unique([guildId, id])
+}
+
+model DashboardWarning {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId      String
+  user        Member?  @relation(fields: [userId], references: [id])
+  moderatorId String
+  reason      String
+  level       Int      @default(1)
+  createdAt   DateTime @default(now())
+
+  @@map("dashboard_warnings")
+}
+
+model Mute {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId      String
+  user        Member?  @relation(fields: [userId], references: [id])
+  moderatorId String
+  reason      String
+  duration    Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+}
+
+model Ban {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  userId      String
+  user        Member?  @relation(fields: [userId], references: [id])
+  moderatorId String
+  reason      String
+  soft        Boolean  @default(false)
+  hackban     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model AutoModConfig {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  feature     String
+  enabled     Boolean  @default(false)
+  threshold   Int      @default(0)
+  action      String   @default("warn")
+  warnLimit   Int      @default(3)
+
+  @@unique([guildId, feature])
+}
+
+model DashboardBadWord {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  word        String
+  severity    String   @default("medium")
+  createdAt   DateTime @default(now())
+
+  @@unique([guildId, word])
+  @@map("dashboard_badwords")
+}
+
+model DashboardReactionRole {
+  id              Int      @id @default(autoincrement())
+  guildId         String
+  guild           Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  messageId       String
+  channelId       String
+  emoji           String
+  roleId          String
+  roleName        String
+  revoked         Boolean  @default(false)
+  syncStatus      String   @default("synced")
+  createdAt       DateTime @default(now())
+
+  @@map("dashboard_reaction_roles")
+}
+
+model CommandLog {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  commandName String
+  category    String
+  userId      String
+  username    String
+  args        String   @default("")
+  success     Boolean  @default(true)
+  durationMs  Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model AutoModEvent {
+  id          Int      @id @default(autoincrement())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  feature     String
+  userId      String
+  username    String
+  action      String
+  content     String   @default("")
+  createdAt   DateTime @default(now())
+}
