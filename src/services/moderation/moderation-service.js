@@ -10,6 +10,7 @@ const {
 } = require('../../config/constants');
 const { resolveEscalationRule, buildEscalationKey } = require('./escalation');
 const { sendModerationLog } = require('./modlog');
+const { syncAutoModEvent } = require('../../app/dashboard-sync');
 
 const deleteMessage = require('./actions/delete-message');
 const warn = require('./actions/warn');
@@ -566,6 +567,17 @@ function createModerationService({ client, i18n, redis, repos, logger }) {
       duration,
       revoked
     });
+
+    if (ctx.repos?.pool) {
+      syncAutoModEvent(ctx.repos.pool, {
+        guildId: ctx.guild.id,
+        feature: violation.type,
+        userId: ctx.user?.id || ctx.member?.id || 'unknown',
+        username: ctx.user?.username || ctx.member?.user?.username || 'unknown',
+        action: finalAction,
+        content: ctx.message?.content || ''
+      });
+    }
 
     return {
       ...violation,

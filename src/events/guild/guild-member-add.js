@@ -1,6 +1,12 @@
-async function registerGuildMemberAddEvent({ client, moderationService, autoroleRepo, logger }) {
+const { syncMember } = require('../../app/dashboard-sync');
+
+async function registerGuildMemberAddEvent({ client, moderationService, autoroleRepo, logger, pool }) {
   client.on('guildMemberAdd', async (member) => {
     try {
+      if (pool) {
+        syncMember(pool, member);
+      }
+
       if (moderationService) {
         const violation = await moderationService.handleGuildMemberAdd(member);
         if (violation) {

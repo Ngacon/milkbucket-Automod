@@ -1,3 +1,5 @@
+const { syncReactionRole, removeReactionRole } = require('../app/dashboard-sync');
+
 class ReactionRoleRepository {
   constructor({ pool }) {
     this.pool = pool;
@@ -87,6 +89,14 @@ class ReactionRoleRepository {
 
       await client.query('COMMIT');
 
+      syncReactionRole(this.pool, {
+        guildId,
+        channelId,
+        messageId,
+        roleId,
+        emoji
+      });
+
       return {
         created: existing.rowCount === 0,
         entry: result.rows[0]
@@ -118,6 +128,8 @@ class ReactionRoleRepository {
     if (result.rows.length === 0) {
       return null;
     }
+
+    removeReactionRole(this.pool, { messageId, emoji: preferredEmoji || lookupValues[0] });
 
     return (
       result.rows.find((entry) => entry.emoji === preferredEmoji) ||

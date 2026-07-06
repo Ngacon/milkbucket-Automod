@@ -19,6 +19,7 @@ const {
   BOT_EMOJIS
 } = require('../config/constants');
 const { LOG_COMMANDS } = require('../config/feature-flags');
+const { syncCommandLog } = require('./dashboard-sync');
 
 function walkJavaScriptFiles(directoryPath) {
   const entries = fs.readdirSync(directoryPath, { withFileTypes: true });
@@ -406,6 +407,19 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
 
     try {
       await command.execute(commandContext);
+
+      if (message.guild) {
+        syncCommandLog(db, {
+          guildId: message.guild.id,
+          commandName: command.meta.name,
+          category: command.meta.category || 'other',
+          userId: message.author.id,
+          username: message.author.username,
+          args: commandArgs.join(' '),
+          success: true,
+          durationMs: 0
+        });
+      }
     } catch (error) {
       logger.error('Command execution failed', {
         error,
@@ -413,6 +427,19 @@ function createRouter({ client, commands, guildSettingsRepo, i18n, logger, db, r
         guildId: message.guild?.id || null,
         userId: message.author.id
       });
+
+      if (message.guild) {
+        syncCommandLog(db, {
+          guildId: message.guild.id,
+          commandName: command.meta.name,
+          category: command.meta.category || 'other',
+          userId: message.author.id,
+          username: message.author.username,
+          args: commandArgs.join(' '),
+          success: false,
+          durationMs: 0
+        });
+      }
 
       await safeReply(
         message,

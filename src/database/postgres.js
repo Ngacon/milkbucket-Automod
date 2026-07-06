@@ -139,6 +139,146 @@ async function initializePostgres(pool, logger) {
     );
   `);
 
+  // ── Dashboard / shared tables ─────────────────────────────────────
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "Guild" (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      "iconUrl" TEXT,
+      "ownerId" TEXT NOT NULL,
+      "memberCount" INTEGER NOT NULL DEFAULT 0,
+      "channelCount" INTEGER NOT NULL DEFAULT 0,
+      "roleCount" INTEGER NOT NULL DEFAULT 0,
+      prefix TEXT NOT NULL DEFAULT 'm!',
+      language TEXT NOT NULL DEFAULT 'vi',
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      "joinedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      "logChannelId" TEXT
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "Member" (
+      id TEXT NOT NULL,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      username TEXT NOT NULL,
+      "displayName" TEXT,
+      discriminator TEXT,
+      "avatarUrl" TEXT,
+      bot BOOLEAN NOT NULL DEFAULT FALSE,
+      "joinedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      roles TEXT NOT NULL DEFAULT '[]',
+      PRIMARY KEY (id, "guildId")
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "Mute" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      "userId" TEXT NOT NULL,
+      "moderatorId" TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      duration INTEGER NOT NULL DEFAULT 0,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      "expiresAt" TIMESTAMPTZ
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "Ban" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      "userId" TEXT NOT NULL,
+      "moderatorId" TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      soft BOOLEAN NOT NULL DEFAULT FALSE,
+      hackban BOOLEAN NOT NULL DEFAULT FALSE,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "AutoModConfig" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      feature TEXT NOT NULL,
+      enabled BOOLEAN NOT NULL DEFAULT FALSE,
+      threshold INTEGER NOT NULL DEFAULT 0,
+      action TEXT NOT NULL DEFAULT 'warn',
+      "warnLimit" INTEGER NOT NULL DEFAULT 3,
+      UNIQUE ("guildId", feature)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "dashboard_warnings" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      "userId" TEXT NOT NULL,
+      "moderatorId" TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      level INTEGER NOT NULL DEFAULT 1,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "dashboard_badwords" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      word TEXT NOT NULL,
+      severity TEXT NOT NULL DEFAULT 'medium',
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE ("guildId", word)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "dashboard_reaction_roles" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      "messageId" TEXT NOT NULL,
+      "channelId" TEXT NOT NULL,
+      emoji TEXT NOT NULL,
+      "roleId" TEXT NOT NULL,
+      "roleName" TEXT NOT NULL,
+      revoked BOOLEAN NOT NULL DEFAULT FALSE,
+      "syncStatus" TEXT NOT NULL DEFAULT 'synced',
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "CommandLog" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      "commandName" TEXT NOT NULL,
+      category TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      username TEXT NOT NULL,
+      args TEXT NOT NULL DEFAULT '',
+      success BOOLEAN NOT NULL DEFAULT TRUE,
+      "durationMs" INTEGER NOT NULL DEFAULT 0,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS "AutoModEvent" (
+      id SERIAL PRIMARY KEY,
+      "guildId" TEXT NOT NULL REFERENCES "Guild"(id) ON DELETE CASCADE,
+      feature TEXT NOT NULL,
+      "userId" TEXT NOT NULL,
+      username TEXT NOT NULL,
+      action TEXT NOT NULL,
+      content TEXT NOT NULL DEFAULT '',
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
   logger.info('PostgreSQL schema is ready');
 }
 

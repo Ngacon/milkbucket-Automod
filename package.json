@@ -7,6 +7,9 @@
   "scripts": {
     "start": "node src/app/bootstrap.js",
     "dev": "node --watch src/app/bootstrap.js",
+    "dev:bot": "node --watch src/app/bootstrap.js",
+    "dev:web": "npm run dev --prefix website",
+    "dev:all": "npx concurrently -n bot,web -c cyan,magenta \"npm run dev:bot\" \"npm run dev:web\"",
     "test": "node --test"
   },
   "engines": {
@@ -17,5 +20,8 @@
     "dotenv": "^16.0.0",
     "ioredis": "^5.0.0",
     "pg": "^8.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
   }
 }

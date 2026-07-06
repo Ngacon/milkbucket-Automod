@@ -29,6 +29,7 @@ const { registerReactionAddEvent } = require('../events/reaction/reaction-add');
 const { registerReactionRemoveEvent } = require('../events/reaction/reaction-remove');
 const i18n = require('../i18n');
 const { APP_NAME } = require('../config/constants');
+const { syncGuild, syncMember } = require('./dashboard-sync');
 
 const logger = createLogger('bootstrap');
 
@@ -82,7 +83,8 @@ async function bootstrap() {
     warningsRepo,
     automodRepo,
     autoroleRepo,
-    reactionRoleRepo
+    reactionRoleRepo,
+    pool
   };
 
   const client = new Client({
@@ -137,7 +139,8 @@ async function bootstrap() {
     client,
     moderationService,
     autoroleRepo,
-    logger: logger.child('events:guildMemberAdd')
+    logger: logger.child('events:guildMemberAdd'),
+    pool
   });
 
   registerReactionAddEvent({
@@ -154,13 +157,24 @@ async function bootstrap() {
 
   const readyPromise = once(client, 'ready');
 
-  client.once('ready', () => {
+  client.once('ready', async () => {
     logger.info('Discord client is ready', {
       app: APP_NAME,
       userTag: client.user?.tag || null,
       guildCount: client.guilds.cache.size,
       locales: i18n.getAvailableLocales()
     });
+
+    // Sync all guilds and members to shared dashboard tables
+    for (const guild of client.guilds.cache.values()) {
+      syncGuild(pool, guild);
+      const members = await guild.members.fetch().catch(() => null);
+      if (members) {
+        for (const member of members.values()) {
+          syncMember(pool, member);
+        }
+      }
+    }
   });
 
   const shutdown = async (signal) => {
@@ -187,8 +201,72 @@ async function bootstrap() {
     void shutdown('SIGTERM');
   });
 
-  const port = Number(process.env.PORT) || 3000;
-  const server = http.createServer((req, res) => {
+  const ALLOWED_GUILD_ID = process.env.ALLOWED_GUILD_ID || '1382898536265289810';
+  const REQUIRED_ROLE_ID = process.env.REQUIRED_ROLE_ID || '1468253529268420688';
+
+  const port = Number(process.env.BOT_PORT) || 3001;
+  const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url, `http://localhost:${port}`);
+
+    if (url.pathname === '/api/status' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        online: true,
+        startedAt: client.readyAt ? client.readyAt.toISOString() : new Date().toISOString(),
+        uptimeMs: client.uptime || 0,
+        ping: client.ws.ping,
+        wsPing: client.ws.ping,
+        memoryMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        cpuPct: 0,
+        version: require('../../package.json').version,
+        nodeVersion: process.version,
+        discordJsVersion: require('discord.js').version,
+        shards: client.ws.shards ? Array.from(client.ws.shards.values()).map(s => ({
+          id: s.id,
+          status: s.status,
+          ping: s.ping,
+        })) : [],
+        guilds: client.guilds.cache.size,
+        commandsLoaded: commands ? commands.length : 0,
+      }));
+      return;
+    }
+
+    if (url.pathname === '/api/check-member' && req.method === 'GET') {
+      const userId = url.searchParams.get('userId');
+      const guildId = url.searchParams.get('guildId') || ALLOWED_GUILD_ID;
+
+      if (!userId) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ allowed: false, error: 'Missing userId' }));
+        return;
+      }
+
+      try {
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ allowed: false, error: 'Guild not found' }));
+          return;
+        }
+
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ allowed: false, reason: 'not_member' }));
+          return;
+        }
+
+        const allowed = member.roles.cache.has(REQUIRED_ROLE_ID);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ allowed }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ allowed: false, error: 'Internal error' }));
+      }
+      return;
+    }
+
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end(`${APP_NAME} is running.\n`);
   });

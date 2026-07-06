@@ -5,6 +5,8 @@ const DEFAULT_THRESHOLDS = [
   { warns: 10, action: 'ban', duration: null, message: null }
 ];
 
+const { syncBadWord, removeBadWord } = require('../app/dashboard-sync');
+
 class AutomodRepository {
   constructor({ pool, redis, logger }) {
     this.pool = pool;
@@ -387,6 +389,7 @@ mapConfig(row, thresholds, modlogChannelId) {
       )
     ]);
 
+    syncBadWord(this.pool, { guildId, word, severity: 'medium' });
     await this.invalidateCaches(guildId);
   }
 
@@ -399,6 +402,7 @@ mapConfig(row, thresholds, modlogChannelId) {
       [guildId, word]
     );
 
+    removeBadWord(this.pool, { guildId, word });
     await this.invalidateCaches(guildId);
   }
 

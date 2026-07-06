@@ -1,3 +1,5 @@
+const { syncWarning } = require('../../../app/dashboard-sync');
+
 async function warn(ctx, payload) {
   const warning = await ctx.repos.warningsRepo.addWarning({
     guildId: ctx.guild.id,
@@ -11,6 +13,15 @@ async function warn(ctx, payload) {
     userId: ctx.user.id,
     timeWindowSeconds: ctx.config.timeWindow
   });
+
+  if (ctx.repos.pool) {
+    syncWarning(ctx.repos.pool, {
+      guildId: ctx.guild.id,
+      userId: ctx.user.id,
+      moderatorId: ctx.client.user.id,
+      reason: payload.reason
+    });
+  }
 
   return {
     id: warning.id,
